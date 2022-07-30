@@ -33,7 +33,12 @@
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
-		"lint": "eslint . --ext .ts,.tsx",
+		"style": "npm run prettier",
+        "style-check": "npm run prettier-check",
+		"lint": "npm run eslint",
+		"eslint": "./node_modules/.bin/eslint --config ./config/eslint.json --no-eslintrc \"@(src|test|scripts)/**/*.@(ts|js)\"",
+		"prettier": "./node_modules/.bin/prettier --config ./config/prettier.json --write \"@(src|test|scripts)/**/*.@(ts|js|md|html|css|json)\"",
+        "prettier-check": "./node_modules/.bin/prettier --config ./config/prettier.json --check \"@(src|test)/**/*.@(ts|js|md|html|css|json)\"",
 		"watch": "tsc -watch -p ./"
 	},
 	"devDependencies": {
@@ -42,6 +47,7 @@
 		"@typescript-eslint/eslint-plugin": "^5.30.0",
 		"@typescript-eslint/parser": "^5.30.0",
 		"eslint": "^8.13.0",
+		"prettier": "^2.7.1",
 		"typescript": "^4.7.2"
 	}
 }
