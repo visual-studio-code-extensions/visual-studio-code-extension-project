@@ -60,7 +60,10 @@ export function activate(context: vscode.ExtensionContext) {
         activeEditor.setDecorations(smallNumberDecorationType, smallNumbers);
         activeEditor.setDecorations(largeNumberDecorationType, largeNumbers);
 
-        const isTsFile = activeEditor.document.fileName.endsWith(".ts"),
+
+        const filename = activeEditor.document.fileName;
+        const isTsFile = filename.endsWith(".ts");
+
         if (isTsFile) {
             const decorations = getDecorations(text);
             activeEditor.setDecorations(largeNumberDecorationType, decorations);
