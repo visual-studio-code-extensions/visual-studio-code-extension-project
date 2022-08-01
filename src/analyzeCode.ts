@@ -50,8 +50,8 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 throw new Error("Source File is undefined");
             }
 
-            const { startLine, endLine, startCharacter, endCharacter } = getNodePosition(sourceFile , node);
-
+            const { startLine, endLine, startCharacter, endCharacter } =
+                getNodePosition(sourceFile, node);
 
             detectedVariableStatements.push({
                 name: expression.name.getText(),
@@ -63,7 +63,10 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 //TODO: add you cant change constants and so
                 variableType: variableType.getText(),
 
-                startLine, endLine, startCharacter, endCharacter
+                startLine,
+                endLine,
+                startCharacter,
+                endCharacter,
             });
             //else if its an expression statement for example defining a variable and changing its value later
             //TODO: should check if its a const or a var
@@ -135,7 +138,8 @@ function editVariables(
             detectedVariableStatements
         );
 
-        const { startLine, endLine, startCharacter, endCharacter } = getNodePosition(sourceFile, nodeExpression);
+        const { startLine, endLine, startCharacter, endCharacter } =
+            getNodePosition(sourceFile, nodeExpression);
 
         //Check if undefined and throw an error if so
         if (newVariableValue === undefined) {
@@ -181,8 +185,8 @@ function editVariables(
                 nodeExpression.operator
             );
 
-            const { startLine, endLine, startCharacter, endCharacter } = getNodePosition(sourceFile, nodeExpression);
-
+            const { startLine, endLine, startCharacter, endCharacter } =
+                getNodePosition(sourceFile, nodeExpression);
 
             if (operation !== undefined) {
                 detectedVariableStatements.push({
@@ -198,7 +202,10 @@ function editVariables(
                     variableType:
                         detectedVariableStatements[elementIndex].variableType,
 
-                        startLine, endLine, startCharacter, endCharacter
+                    startLine,
+                    endLine,
+                    startCharacter,
+                    endCharacter,
                 });
                 return detectedVariableStatements;
             } else {
@@ -214,16 +221,10 @@ function editVariables(
     return undefined;
 }
 
-function getNodePosition(sourceFile: ts.SourceFile, nodeExpression: ts.Node) {
-    const start = ts.getLineAndCharacterOfPosition(
-        sourceFile,
-        nodeExpression.pos
-    );
+function getNodePosition(sourceFile: ts.SourceFile, node: ts.Node) {
+    const start = ts.getLineAndCharacterOfPosition(sourceFile, node.pos);
 
-    const end = ts.getLineAndCharacterOfPosition(
-        sourceFile,
-        nodeExpression.end
-    );
+    const end = ts.getLineAndCharacterOfPosition(sourceFile, node.end);
 
     const startLine = start.line;
     const endLine = end.line;

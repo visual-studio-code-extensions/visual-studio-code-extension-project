@@ -6,6 +6,23 @@ export function activate(context: vscode.ExtensionContext) {
 
     let timeout: NodeJS.Timer | undefined = undefined;
 
+    const variableDecorationType = vscode.window.createTextEditorDecorationType(
+        {
+            borderWidth: "1px",
+            borderStyle: "solid",
+            overviewRulerColor: "blue",
+            overviewRulerLane: vscode.OverviewRulerLane.Right,
+            light: {
+                // this color will be used in light color themes
+                borderColor: "pink",
+            },
+            dark: {
+                // this color will be used in dark color themes
+                borderColor: "lightblue",
+            },
+        }
+    );
+
     // create a decorator type that we use to decorate small numbers
     const smallNumberDecorationType =
         vscode.window.createTextEditorDecorationType({
@@ -60,13 +77,12 @@ export function activate(context: vscode.ExtensionContext) {
         activeEditor.setDecorations(smallNumberDecorationType, smallNumbers);
         activeEditor.setDecorations(largeNumberDecorationType, largeNumbers);
 
-
         const filename = activeEditor.document.fileName;
         const isTsFile = filename.endsWith(".ts");
 
         if (isTsFile) {
             const decorations = getDecorations(text);
-            activeEditor.setDecorations(largeNumberDecorationType, decorations);
+            activeEditor.setDecorations(variableDecorationType, decorations);
         }
     }
 
