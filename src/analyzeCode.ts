@@ -46,23 +46,24 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 throw Error("Value is undefined");
             }
 
-            const getLineAndCharacter = ts.getLineAndCharacterOfPosition(
-                sourceFile as ts.SourceFile,
-                node.pos
-            );
+            if (sourceFile === undefined) {
+                throw new Error("Source File is undefined");
+            }
+
+            const { startLine, endLine, startCharacter, endCharacter } = getNodePosition(sourceFile , node);
+
+
             detectedVariableStatements.push({
-                variableName: expression.name.getText(),
+                name: expression.name.getText(),
 
-                variableValue: variableValue,
+                value: variableValue,
 
-                variableText: node.getText(),
+                text: node.getText(),
 
                 //TODO: add you cant change constants and so
                 variableType: variableType.getText(),
 
-                variableLineNumber: getLineAndCharacter.line,
-
-                variableStartingCharacter: getLineAndCharacter.character,
+                startLine, endLine, startCharacter, endCharacter
             });
             //else if its an expression statement for example defining a variable and changing its value later
             //TODO: should check if its a const or a var
@@ -120,7 +121,7 @@ function editVariables(
     if (ts.isBinaryExpression(nodeExpression)) {
         const elementIndex = detectedVariableStatements.findIndex(
             (variables) => {
-                return variables.variableName === nodeExpression.left.getText();
+                return variables.name === nodeExpression.left.getText();
             }
         );
         //variable not found in the array
@@ -134,31 +135,28 @@ function editVariables(
             detectedVariableStatements
         );
 
-        const newVariableLine = ts.getLineAndCharacterOfPosition(
-            sourceFile,
-            nodeExpression.pos
-        );
+        const { startLine, endLine, startCharacter, endCharacter } = getNodePosition(sourceFile, nodeExpression);
 
         //Check if undefined and throw an error if so
-        if (newVariableValue === undefined || newVariableLine === undefined) {
+        if (newVariableValue === undefined) {
             throw Error("Value is undefined");
         }
 
         //since right would always be binary expression we want to process that, and update the variable value
 
         detectedVariableStatements.push({
-            variableName: detectedVariableStatements[elementIndex].variableName,
+            name: detectedVariableStatements[elementIndex].name,
 
-            variableValue: newVariableValue,
+            value: newVariableValue,
+            startLine,
+            endLine,
+            startCharacter,
+            endCharacter,
 
-            variableText: nodeExpression.getText(),
+            text: nodeExpression.getText(),
 
             //TODO: add you cant change constants and so
             variableType: detectedVariableStatements[elementIndex].variableType,
-
-            variableLineNumber: newVariableLine.line,
-
-            variableStartingCharacter: newVariableLine.character,
         });
 
         return detectedVariableStatements;
@@ -170,10 +168,7 @@ function editVariables(
         if (ts.isIdentifier(nodeExpression.operand)) {
             const elementIndex = detectedVariableStatements.findIndex(
                 (variables) => {
-                    return (
-                        variables.variableName ===
-                        nodeExpression.operand.getText()
-                    );
+                    return variables.name === nodeExpression.operand.getText();
                 }
             );
 
@@ -186,29 +181,24 @@ function editVariables(
                 nodeExpression.operator
             );
 
-            const getLineAndCharacter = ts.getLineAndCharacterOfPosition(
-                sourceFile as ts.SourceFile,
-                nodeExpression.pos
-            );
+            const { startLine, endLine, startCharacter, endCharacter } = getNodePosition(sourceFile, nodeExpression);
+
 
             if (operation !== undefined) {
                 detectedVariableStatements.push({
-                    variableName:
-                        detectedVariableStatements[elementIndex].variableName,
+                    name: detectedVariableStatements[elementIndex].name,
 
-                    variableValue: operation(
-                        detectedVariableStatements[elementIndex].variableValue
+                    value: operation(
+                        detectedVariableStatements[elementIndex].value
                     ),
 
-                    variableText: nodeExpression.getText(),
+                    text: nodeExpression.getText(),
 
                     //TODO: add you cant change constants and so
                     variableType:
                         detectedVariableStatements[elementIndex].variableType,
 
-                    variableLineNumber: getLineAndCharacter.line,
-
-                    variableStartingCharacter: getLineAndCharacter.character,
+                        startLine, endLine, startCharacter, endCharacter
                 });
                 return detectedVariableStatements;
             } else {
@@ -222,6 +212,24 @@ function editVariables(
         }
     }
     return undefined;
+}
+
+function getNodePosition(sourceFile: ts.SourceFile, nodeExpression: ts.Node) {
+    const start = ts.getLineAndCharacterOfPosition(
+        sourceFile,
+        nodeExpression.pos
+    );
+
+    const end = ts.getLineAndCharacterOfPosition(
+        sourceFile,
+        nodeExpression.end
+    );
+
+    const startLine = start.line;
+    const endLine = end.line;
+    const startCharacter = start.character;
+    const endCharacter = end.character;
+    return { startLine, endLine, startCharacter, endCharacter };
 }
 
 function processExpression(
@@ -256,7 +264,7 @@ function processExpression(
         return parseFloat(node.getText());
     } else if (ts.isIdentifier(node)) {
         const identifiervalue = detectedVariableStatements.find((variables) => {
-            return variables.variableName === node.getText();
+            return variables.name === node.getText();
         });
         if (identifiervalue === undefined) {
             throw new Error(
@@ -266,7 +274,7 @@ function processExpression(
             );
         }
 
-        return identifiervalue.variableValue;
+        return identifiervalue.value;
     } else if (ts.isParenthesizedExpression(node)) {
         //in case we encounter a (...) situation, for example const a = 2 + (2 + 4)
         return processExpression(node.expression, detectedVariableStatements);
@@ -275,7 +283,7 @@ function processExpression(
             //Case where we are doing ++i or --i
             const elementIndex = detectedVariableStatements.findIndex(
                 (variables) => {
-                    return variables.variableName === node.operand.getText();
+                    return variables.name === node.operand.getText();
                 }
             );
             //variable not found
@@ -288,7 +296,7 @@ function processExpression(
             //Apply the correct operation
             if (operation !== undefined) {
                 return operation(
-                    detectedVariableStatements[elementIndex].variableValue
+                    detectedVariableStatements[elementIndex].value
                 );
             }
             return undefined;
@@ -326,7 +334,9 @@ function processExpression(
 function visitNodeRecursive(node: ts.Node, visit: (node: ts.Node) => void) {
     //Call method on every node
     visit(node);
-    node.getChildren().forEach((child: ts.Node) => visitNodeRecursive(child, visit));
+    node.getChildren().forEach((child: ts.Node) =>
+        visitNodeRecursive(child, visit)
+    );
 }
 
 //For future parse and reparse whenever file changes

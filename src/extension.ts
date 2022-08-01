@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-
+import { getDecorations } from "./getDecorations";
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
     console.log("decorator sample is activated");
@@ -59,6 +59,11 @@ export function activate(context: vscode.ExtensionContext) {
         }
         activeEditor.setDecorations(smallNumberDecorationType, smallNumbers);
         activeEditor.setDecorations(largeNumberDecorationType, largeNumbers);
+
+        if (activeEditor.document.fileName.endsWith(".ts")) {
+            const decorations = getDecorations(text);
+            activeEditor.setDecorations(largeNumberDecorationType, decorations);
+        }
     }
 
     function triggerUpdateDecorations(throttle = false) {

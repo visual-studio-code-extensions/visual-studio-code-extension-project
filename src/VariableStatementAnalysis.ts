@@ -1,8 +1,13 @@
+import { NoSubstitutionTemplateLiteral } from "typescript";
+
 export interface VariableStatementAnalysis {
-    variableName: string;
-    variableValue: number;
-    variableText: string;
+    name: string;
+    startLine: number;
+    endLine: number;
+    startCharacter: number;
+    endCharacter: number;
+
+    value: number;
+    text: string;
     variableType: string;
-    variableLineNumber: number;
-    variableStartingCharacter: number;
 }

@@ -1,5 +1,4 @@
-import { analyzeCode, } from "../src/analyzeCode";
-
+import { analyzeCode } from "../src/analyzeCode";
 
 test("Arithmetic expression", () => {
     const code = "const x = 2 + 5 + 2;";
