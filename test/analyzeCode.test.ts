@@ -1,10 +1,44 @@
 import { analyzeCode } from "../src/analyzeCode";
+import { VariableStatementAnalysis } from "../src/VariableStatementAnalysis";
+
+function getSubset(actual: VariableStatementAnalysis, expected: Partial<VariableStatementAnalysis> ) {
+
+    const testActual = JSON.parse(JSON.stringify(actual));
+
+    // crosses out pieces to not test
+    if (expected.expressionLocation === undefined) {
+        testActual.expressionLocation = undefined;
+    }
+
+    
+}
+
+function getSubsetArray(actual: VariableStatementAnalysis[], expected: Partial<VariableStatementAnalysis>) {
+    
+    //return actual.map(getSubset)
+}
+
+function expectSubset(actual: VariableStatementAnalysis[], expected: Partial<VariableStatementAnalysis>) {
+    const actualSubset = getSubsetArray(actual, expected);
+    expect(actualSubset).toStrictEqual(expected);
+}
+
+
+// 
+// expect(testActual).toStrictEqual(expected);
 
 test("Arithmetic expression", () => {
     const code = "const x = 2 + 5 + 2;";
 
     const statements = analyzeCode(code);
 
+    // expectSubset(statements, [{
+    //     name: "x",
+    //     text: "const x = 2 + 5 + 2",
+    //     variableType: "const",
+    //     value: 9,
+    // }]);
+    
     expect(statements).toStrictEqual([
         {
             name: "x",

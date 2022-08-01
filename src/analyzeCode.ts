@@ -63,10 +63,12 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 //TODO: add you cant change constants and so
                 variableType: variableType.getText(),
 
-                startLine,
-                endLine,
-                startCharacter,
-                endCharacter,
+                expressionLocation: {
+                    startLine,
+                    endLine,
+                    startCharacter,
+                    endCharacter,
+                },
             });
             //else if its an expression statement for example defining a variable and changing its value later
             //TODO: should check if its a const or a var
@@ -152,10 +154,12 @@ function editVariables(
             name: detectedVariableStatements[elementIndex].name,
 
             value: newVariableValue,
-            startLine,
-            endLine,
-            startCharacter,
-            endCharacter,
+            expressionLocation: {
+                startLine,
+                endLine,
+                startCharacter,
+                endCharacter,
+            },
 
             text: nodeExpression.getText(),
 
@@ -202,10 +206,12 @@ function editVariables(
                     variableType:
                         detectedVariableStatements[elementIndex].variableType,
 
-                    startLine,
-                    endLine,
-                    startCharacter,
-                    endCharacter,
+                    expressionLocation: {
+                        startLine,
+                        endLine,
+                        startCharacter,
+                        endCharacter,
+                    },
                 });
                 return detectedVariableStatements;
             } else {

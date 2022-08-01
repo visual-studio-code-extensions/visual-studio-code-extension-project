@@ -5,7 +5,8 @@ export function getDecorations(text: string): vscode.DecorationOptions[] {
     const results = analyzeCode(text);
 
     const decorations = results.map((statement) => {
-        const { startLine, startCharacter, endCharacter, endLine } = statement;
+        const { startLine, startCharacter, endCharacter, endLine } =
+            statement.expressionLocation;
 
         const range = new vscode.Range(
             startLine,
