@@ -23,8 +23,8 @@
 				"id": "myextension.largeNumberBackground",
 				"description": "Background decoration color for large numbers",
 				"defaults": {
-					"dark": "#FF000055",
-					"light": "#FF000055",
+					"dark": "#00ff005e",
+					"light": "#dc18ee55",
 					"highContrast": "#FF000055"
 				}
 			}
