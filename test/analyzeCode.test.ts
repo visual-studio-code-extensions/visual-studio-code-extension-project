@@ -39,16 +39,22 @@ test("Arithmetic expression", () => {
     //     value: 9,
     // }]);
     
-    expect(statements).toStrictEqual([
-        {
-            name: "x",
-            text: "const x = 2 + 5 + 2",
-            variableType: "const",
-            value: 9,
-            startLine: 0,
-            startCharacter: 0,
-        },
-    ]);
+    expect(statements).toBe(expect.objectContaining([{
+        name: "x",
+        text: "const x = 2 + 5 + 2",
+        variableType: "const",
+        value: 9,
+    }]));
+    // expect(statements).toStrictEqual([
+    //     {
+    //         name: "x",
+    //         text: "const x = 2 + 5 + 2",
+    //         variableType: "const",
+    //         value: 9,
+    //         startLine: 0,
+    //         startCharacter: 0,
+    //     },
+    // ]);
 });
 
 test("Edit variable", () => {
