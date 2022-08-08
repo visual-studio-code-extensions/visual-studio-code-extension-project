@@ -1,3 +1,4 @@
+import exp from "constants";
 import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
@@ -50,9 +51,10 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 throw new Error("Source File is undefined");
             }
 
-            const { startLine, endLine, startCharacter, endCharacter } =
-                getNodePosition(sourceFile, node);
-
+            const expressionLocation = getNodePosition(sourceFile, node);
+            
+            const identifierLocation = getNodePosition(sourceFile, expression.name);
+            
             detectedVariableStatements.push({
                 name: expression.name.getText(),
 
@@ -64,13 +66,20 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 variableType: variableType.getText(),
 
                 expressionLocation: {
-                    startLine,
-                    endLine,
-                    startCharacter,
-                    endCharacter,
+                    startLine : expressionLocation.startLine,
+                    endLine : expressionLocation.endLine,
+                    startCharacter : expressionLocation.startCharacter,
+                    endCharacter : expressionLocation.endCharacter,
                 },
+
+                identifierLocation: {
+                    startLine : identifierLocation.startLine,
+                    endLine : identifierLocation.endLine,
+                    startCharacter : identifierLocation.startCharacter,
+                    endCharacter : identifierLocation.endCharacter,
+                },
+
             });
-            //else if its an expression statement for example defining a variable and changing its value later
             //TODO: should check if its a const or a var
         } else if (ts.isExpressionStatement(node)) {
             const nodeExpression = node.expression;
@@ -140,8 +149,9 @@ function editVariables(
             detectedVariableStatements
         );
 
-        const { startLine, endLine, startCharacter, endCharacter } =
-            getNodePosition(sourceFile, nodeExpression);
+        const expressionLocation = getNodePosition(sourceFile, nodeExpression);
+            
+        const identifierLocation = getNodePosition(sourceFile, nodeExpression.left);
 
         //Check if undefined and throw an error if so
         if (newVariableValue === undefined) {
@@ -155,10 +165,17 @@ function editVariables(
 
             value: newVariableValue,
             expressionLocation: {
-                startLine,
-                endLine,
-                startCharacter,
-                endCharacter,
+                startLine : expressionLocation.startLine,
+                endLine : expressionLocation.endLine,
+                startCharacter : expressionLocation.startCharacter,
+                endCharacter : expressionLocation.endCharacter,
+            },
+
+            identifierLocation: {
+                startLine : identifierLocation.startLine,
+                endLine : identifierLocation.endLine,
+                startCharacter : identifierLocation.startCharacter,
+                endCharacter : identifierLocation.endCharacter,
             },
 
             text: nodeExpression.getText(),
@@ -189,8 +206,9 @@ function editVariables(
                 nodeExpression.operator
             );
 
-            const { startLine, endLine, startCharacter, endCharacter } =
-                getNodePosition(sourceFile, nodeExpression);
+            const expressionLocation = getNodePosition(sourceFile, nodeExpression);
+            
+            const identifierLocation = getNodePosition(sourceFile, nodeExpression.operand);
 
             if (operation !== undefined) {
                 detectedVariableStatements.push({
@@ -206,12 +224,19 @@ function editVariables(
                     variableType:
                         detectedVariableStatements[elementIndex].variableType,
 
-                    expressionLocation: {
-                        startLine,
-                        endLine,
-                        startCharacter,
-                        endCharacter,
-                    },
+                        expressionLocation: {
+                            startLine : expressionLocation.startLine,
+                            endLine : expressionLocation.endLine,
+                            startCharacter : expressionLocation.startCharacter,
+                            endCharacter : expressionLocation.endCharacter,
+                        },
+            
+                        identifierLocation: {
+                            startLine : identifierLocation.startLine,
+                            endLine : identifierLocation.endLine,
+                            startCharacter : identifierLocation.startCharacter,
+                            endCharacter : identifierLocation.endCharacter,
+                        },
                 });
                 return detectedVariableStatements;
             } else {
