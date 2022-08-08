@@ -22,5 +22,5 @@ commit and push
 > git add  *
 > git commit -am "description"
 > git push
-6. Make a pull request
+7. Make a pull request
 On GitHub it will usually prompt you
