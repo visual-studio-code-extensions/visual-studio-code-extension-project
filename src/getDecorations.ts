@@ -6,11 +6,11 @@ export function getDecorations(text: string): vscode.DecorationOptions[] {
 
     const decorations = results.map((statement) => {
         const { startLine, startCharacter, endCharacter, endLine } =
-            statement.expressionLocation;
+            statement.identifierLocation;
 
         const range = new vscode.Range(
             startLine,
-            startCharacter,
+            startCharacter + 1,
             endLine,
             endCharacter
         );
