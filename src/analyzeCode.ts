@@ -1,7 +1,7 @@
-import exp from "constants";
 import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
+import { Stack } from "./stack";
 
 /**
  * visit top level nodes and retrieve all VariableStatements.
@@ -29,58 +29,66 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
     //Create array that will hold the variables that we want to work with.
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
 
+    const stack = new Stack<VariableStatementAnalysis[]>(
+        detectedVariableStatements
+    );
+
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
         //check if node is a variable declaration
-        if (ts.isVariableDeclarationList(node)) {
+        if (ts.isVariableStatement(node)) {
             const variableType = node.getChildAt(0);
             //calculate the value of that variable and add it to the variables array
-            //TODO: edge case: defining two variables same time
-            const expression = node.declarations[0];
-            const variableValue = processExpression(
-                //get the expression of the variable declaration
-                expression.initializer,
-                detectedVariableStatements
-            );
+            let declarationsList = node.declarationList.declarations;
+            declarationsList.forEach(function (expression) {
+                //const expression = node.declarations[0];
+                const variableValue = processExpression(
+                    //get the expression of the variable declaration
+                    expression.initializer,
+                    detectedVariableStatements
+                );
 
-            if (variableValue === undefined) {
-                throw Error("Value is undefined");
-            }
+                if (variableValue === undefined) {
+                    throw Error("Value is undefined");
+                }
 
-            if (sourceFile === undefined) {
-                throw new Error("Source File is undefined");
-            }
+                //No need to check if source file is undefined, because we already did that earlier in the program.
+                //Get position information
+                const expressionLocation = getNodePosition(
+                    sourceFile as ts.SourceFile,
+                    node
+                );
 
-            const expressionLocation = getNodePosition(sourceFile, node);
-            
-            const identifierLocation = getNodePosition(sourceFile, expression.name);
-            
-            detectedVariableStatements.push({
-                name: expression.name.getText(),
+                const identifierLocation = getNodePosition(
+                    sourceFile as ts.SourceFile,
+                    expression.name
+                );
 
-                value: variableValue,
+                //Create new object that shows information of the variable and push it to the array
+                detectedVariableStatements.push({
+                    name: expression.name.getText(),
 
-                text: node.getText(),
+                    value: variableValue,
 
-                //TODO: add you cant change constants and so
-                variableType: variableType.getText(),
+                    text: node.getText(),
 
-                expressionLocation: {
-                    startLine : expressionLocation.startLine,
-                    endLine : expressionLocation.endLine,
-                    startCharacter : expressionLocation.startCharacter,
-                    endCharacter : expressionLocation.endCharacter,
-                },
+                    variableType: variableType.getText(),
 
-                identifierLocation: {
-                    startLine : identifierLocation.startLine,
-                    endLine : identifierLocation.endLine,
-                    startCharacter : identifierLocation.startCharacter,
-                    endCharacter : identifierLocation.endCharacter,
-                },
+                    expressionLocation: {
+                        startLine: expressionLocation.startLine,
+                        endLine: expressionLocation.endLine,
+                        startCharacter: expressionLocation.startCharacter,
+                        endCharacter: expressionLocation.endCharacter,
+                    },
 
+                    identifierLocation: {
+                        startLine: identifierLocation.startLine,
+                        endLine: identifierLocation.endLine,
+                        startCharacter: identifierLocation.startCharacter,
+                        endCharacter: identifierLocation.endCharacter,
+                    },
+                });
             });
-            //TODO: should check if its a const or a var
         } else if (ts.isExpressionStatement(node)) {
             const nodeExpression = node.expression;
             const updatedVariablesArray = editVariables(
@@ -91,6 +99,10 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
             if (updatedVariablesArray !== undefined) {
                 detectedVariableStatements = updatedVariablesArray;
             }
+        } else if (ts.isBlock(node)) {
+            // node.statements.forEach((child: ts.Node) =>
+            //     visitVariableStatement(child)
+            // );
         }
     }
     // iterate through source file searching for variable statements
@@ -109,7 +121,7 @@ const operations = new Map<ts.SyntaxKind, (a: number, b: number) => number>([
 ]);
 
 //Not used yet, keep commented for future uses and boolean expression processing
-// const boolOperations = new Map<ts.SyntaxKind, (a: number, b:number) => boolean>([
+// const numberBoolOperations = new Map<ts.SyntaxKind, (a: number, b:number) => boolean>([
 //     [ts.SyntaxKind.EqualsEqualsEqualsToken, (a: number, b: number) => a === b],
 //     [ts.SyntaxKind.ExclamationEqualsEqualsToken, (a: number, b: number) => a !== b],
 // ]);
@@ -143,6 +155,10 @@ function editVariables(
             throw new Error("Variable not defined");
         }
 
+        if (detectedVariableStatements[elementIndex].variableType === "const") {
+            throw new Error("Can't redefine a constant");
+        }
+
         //Get the new variable value
         const newVariableValue = processExpression(
             nodeExpression.right,
@@ -150,8 +166,11 @@ function editVariables(
         );
 
         const expressionLocation = getNodePosition(sourceFile, nodeExpression);
-            
-        const identifierLocation = getNodePosition(sourceFile, nodeExpression.left);
+
+        const identifierLocation = getNodePosition(
+            sourceFile,
+            nodeExpression.left
+        );
 
         //Check if undefined and throw an error if so
         if (newVariableValue === undefined) {
@@ -165,17 +184,17 @@ function editVariables(
 
             value: newVariableValue,
             expressionLocation: {
-                startLine : expressionLocation.startLine,
-                endLine : expressionLocation.endLine,
-                startCharacter : expressionLocation.startCharacter,
-                endCharacter : expressionLocation.endCharacter,
+                startLine: expressionLocation.startLine,
+                endLine: expressionLocation.endLine,
+                startCharacter: expressionLocation.startCharacter,
+                endCharacter: expressionLocation.endCharacter,
             },
 
             identifierLocation: {
-                startLine : identifierLocation.startLine,
-                endLine : identifierLocation.endLine,
-                startCharacter : identifierLocation.startCharacter,
-                endCharacter : identifierLocation.endCharacter,
+                startLine: identifierLocation.startLine,
+                endLine: identifierLocation.endLine,
+                startCharacter: identifierLocation.startCharacter,
+                endCharacter: identifierLocation.endCharacter,
             },
 
             text: nodeExpression.getText(),
@@ -202,13 +221,26 @@ function editVariables(
                 throw new Error("Variable not defined");
             }
 
+            if (
+                detectedVariableStatements[elementIndex].variableType ===
+                "const"
+            ) {
+                throw new Error("Can't redefine a constant");
+            }
+
             const operation = postFixUnaryExpression.get(
                 nodeExpression.operator
             );
 
-            const expressionLocation = getNodePosition(sourceFile, nodeExpression);
-            
-            const identifierLocation = getNodePosition(sourceFile, nodeExpression.operand);
+            const expressionLocation = getNodePosition(
+                sourceFile,
+                nodeExpression
+            );
+
+            const identifierLocation = getNodePosition(
+                sourceFile,
+                nodeExpression.operand
+            );
 
             if (operation !== undefined) {
                 detectedVariableStatements.push({
@@ -220,23 +252,22 @@ function editVariables(
 
                     text: nodeExpression.getText(),
 
-                    //TODO: add you cant change constants and so
                     variableType:
                         detectedVariableStatements[elementIndex].variableType,
 
-                        expressionLocation: {
-                            startLine : expressionLocation.startLine,
-                            endLine : expressionLocation.endLine,
-                            startCharacter : expressionLocation.startCharacter,
-                            endCharacter : expressionLocation.endCharacter,
-                        },
-            
-                        identifierLocation: {
-                            startLine : identifierLocation.startLine,
-                            endLine : identifierLocation.endLine,
-                            startCharacter : identifierLocation.startCharacter,
-                            endCharacter : identifierLocation.endCharacter,
-                        },
+                    expressionLocation: {
+                        startLine: expressionLocation.startLine,
+                        endLine: expressionLocation.endLine,
+                        startCharacter: expressionLocation.startCharacter,
+                        endCharacter: expressionLocation.endCharacter,
+                    },
+
+                    identifierLocation: {
+                        startLine: identifierLocation.startLine,
+                        endLine: identifierLocation.endLine,
+                        startCharacter: identifierLocation.startCharacter,
+                        endCharacter: identifierLocation.endCharacter,
+                    },
                 });
                 return detectedVariableStatements;
             } else {
@@ -245,7 +276,7 @@ function editVariables(
         } else {
             //Case where --5/5-- or ++7/7++ which can't be calculated
             throw new Error(
-                "The operand of an increment or decrement operator must be a variable or a propert"
+                "The operand of an increment or decrement operator must be a variable or a property"
             );
         }
     }
@@ -301,7 +332,7 @@ function processExpression(
         if (identifiervalue === undefined) {
             throw new Error(
                 "Identifier" +
-                    node.getText +
+                    node.getText() +
                     " cannot be found or undefined, please define a variable before using it"
             );
         }
@@ -324,6 +355,8 @@ function processExpression(
                     "Variable: " + node.operand.getText + " not defined"
                 );
             }
+
+            //Get operation from the map and apply it
             const operation = preFixUnaryExpression.get(node.operator);
             //Apply the correct operation
             if (operation !== undefined) {
@@ -342,10 +375,14 @@ function processExpression(
                     "The operand of an increment or decrement operator must be a variable or a property"
                 );
             }
+
+            //Cases where its -2 or +4 which is okay.
             const value = processExpression(
                 node.operand,
                 detectedVariableStatements
             );
+
+            //Get operation from the map and apply it
             const operation = preFixUnaryExpression.get(node.operator);
             if (value !== undefined && operation !== undefined) {
                 return operation(value);

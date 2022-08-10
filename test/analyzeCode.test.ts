@@ -1,30 +1,34 @@
 import { analyzeCode } from "../src/analyzeCode";
 import { VariableStatementAnalysis } from "../src/VariableStatementAnalysis";
 
-function getSubset(actual: VariableStatementAnalysis, expected: Partial<VariableStatementAnalysis> ) {
-
+function getSubset(
+    actual: VariableStatementAnalysis,
+    expected: Partial<VariableStatementAnalysis>
+) {
     const testActual = JSON.parse(JSON.stringify(actual));
 
     // crosses out pieces to not test
     if (expected.expressionLocation === undefined) {
         testActual.expressionLocation = undefined;
     }
-
-    
 }
 
-function getSubsetArray(actual: VariableStatementAnalysis[], expected: Partial<VariableStatementAnalysis>) {
-    
+function getSubsetArray(
+    actual: VariableStatementAnalysis[],
+    expected: Partial<VariableStatementAnalysis>
+) {
     //return actual.map(getSubset)
 }
 
-function expectSubset(actual: VariableStatementAnalysis[], expected: Partial<VariableStatementAnalysis>) {
+function expectSubset(
+    actual: VariableStatementAnalysis[],
+    expected: Partial<VariableStatementAnalysis>
+) {
     const actualSubset = getSubsetArray(actual, expected);
     expect(actualSubset).toStrictEqual(expected);
 }
 
-
-// 
+//
 // expect(testActual).toStrictEqual(expected);
 
 test("Arithmetic expression", () => {
@@ -38,7 +42,7 @@ test("Arithmetic expression", () => {
     //     variableType: "const",
     //     value: 9,
     // }]);
-    
+
     expect(statements).toStrictEqual([
         {
             name: "x",
@@ -78,8 +82,8 @@ test("Edit variable", () => {
 });
 
 test("PrefixUnaryExpression and PrefixUnaryExpression", () => {
-    const code = `const f = -5;
-                const w = +6;
+    const code = `var f = -5;
+                var w = +6;
                  --f;
                  ++w;
                  f--;
