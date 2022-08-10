@@ -233,7 +233,7 @@ test("simple assignment", () => {
 //         let a = x;
 //     }`;
 
-//     const statements = analyzeCode(code);
+    // const statements = analyzeCode(code);
 
 //     expect(statements).toStrictEqual([
 //         {
