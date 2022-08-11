@@ -6,8 +6,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let timeout: NodeJS.Timer | undefined = undefined;
 
-    const color = new vscode.ThemeColor('myextension.largeNumberBackground');
-
+    const color = new vscode.ThemeColor("myextension.largeNumberBackground");
 
     const variableDecorationType = vscode.window.createTextEditorDecorationType(
         {
