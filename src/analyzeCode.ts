@@ -38,11 +38,10 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
     function visitVariableStatement(node: ts.Node) {
         //check if node is a variable declaration
         if (ts.isVariableStatement(node)) {
-            const variableType = node.getChildAt(0);
+            const variableType = node.declarationList.getChildAt(0);
             //calculate the value of that variable and add it to the variables array
             let declarationsList = node.declarationList.declarations;
             declarationsList.forEach(function (expression) {
-                //const expression = node.declarations[0];
                 const variableValue = processExpression(
                     //get the expression of the variable declaration
                     expression.initializer,
@@ -70,25 +69,17 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                     name: expression.name.getText(),
 
                     value: variableValue,
-
+                    //TODO: add you cant change constants and so
+                    variableType: variableType.getText(),
                     text: node.getText(),
 
-            detectedVariableStatements.push({
-                name: expression.name.getText(),
-
-                value: variableValue,
-                //TODO: add you cant change constants and so
-                variableType: variableType.getText(),
-                text: node.getText(),
-
-                expressionLocation,
-                identifierLocation,
-            });
+                    expressionLocation,
+                    identifierLocation,
                 });
+            });
         } else if (ts.isExpressionStatement(node)) {
-            const nodeExpression = node.expression;
             const updatedVariablesArray = editVariables(
-                nodeExpression,
+                node,
                 sourceFile as ts.SourceFile,
                 detectedVariableStatements
             );
@@ -135,10 +126,11 @@ const preFixUnaryExpression = new Map<ts.SyntaxKind, (a: number) => number>([
 ]);
 
 function editVariables(
-    nodeExpression: ts.Expression,
+    node: ts.ExpressionStatement,
     sourceFile: ts.SourceFile,
     detectedVariableStatements: VariableStatementAnalysis[]
 ): VariableStatementAnalysis[] | undefined {
+    const nodeExpression = node.expression;
     //calculate binary expression and update its value
     if (ts.isBinaryExpression(nodeExpression)) {
         const elementIndex = detectedVariableStatements.findIndex(
@@ -180,7 +172,7 @@ function editVariables(
             value: newVariableValue,
             //TODO: add you cant change constants and so
             variableType: detectedVariableStatements[elementIndex].variableType,
-            text: nodeExpression.getText(),
+            text: node.getText(),
             expressionLocation,
             identifierLocation,
         });
@@ -232,11 +224,10 @@ function editVariables(
                         detectedVariableStatements[elementIndex].value
                     ),
 
-                    text: nodeExpression.getText(),
+                    text: node.getText(),
 
                     variableType:
                         detectedVariableStatements[elementIndex].variableType,
-                    text: nodeExpression.getText(),
 
                     expressionLocation,
                     identifierLocation,

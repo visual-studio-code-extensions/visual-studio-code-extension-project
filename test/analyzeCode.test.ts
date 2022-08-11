@@ -13,7 +13,7 @@ describe("basic", () => {
         const expected = [
             {
                 name: "x",
-                text: "const x = 2 + 5 + 2",
+                text: "const x = 2 + 5 + 2;",
                 variableType: "const",
                 value: 9,
             },
@@ -24,7 +24,7 @@ describe("basic", () => {
 
 describe("advanced", () => {
     test("Edit variable", () => {
-        const code = `var y = 2 + 5 ;
+        const code = `var y = 2 + 5;
                 y = 2;`;
 
         const actual = analyzeCode(code);
@@ -32,13 +32,13 @@ describe("advanced", () => {
         const expected = [
             {
                 name: "y",
-                text: "var y = 2 + 5",
+                text: "var y = 2 + 5;",
                 variableType: "var",
                 value: 7,
             },
             {
                 name: "y",
-                text: "y = 2",
+                text: "y = 2;",
                 variableType: "var",
                 value: 2,
             },
@@ -48,8 +48,8 @@ describe("advanced", () => {
     });
 
     test("PrefixUnaryExpression and PrefixUnaryExpression", () => {
-        const code = `const f = -5;
-                const w = +6;
+        const code = `let f = -5;
+                let w = +6;
                  --f;
                  ++w;
                  f--;
@@ -58,38 +58,38 @@ describe("advanced", () => {
         const expected = [
             {
                 name: "f",
-                text: "const f = -5",
-                variableType: "const",
+                text: "let f = -5;",
+                variableType: "let",
                 value: -5,
             },
             {
                 name: "w",
-                text: "const w = +6",
-                variableType: "const",
+                text: "let w = +6;",
+                variableType: "let",
                 value: +6,
             },
             {
                 name: "f",
-                text: "--f",
-                variableType: "const",
+                text: "--f;",
+                variableType: "let",
                 value: -6,
             },
             {
                 name: "w",
-                text: "++w",
-                variableType: "const",
+                text: "++w;",
+                variableType: "let",
                 value: +7,
             },
             {
                 name: "f",
-                text: "f--",
-                variableType: "const",
+                text: "f--;",
+                variableType: "let",
                 value: -6,
             },
             {
                 name: "w",
-                text: "w++",
-                variableType: "const",
+                text: "w++;",
+                variableType: "let",
                 value: +7,
             },
         ];
@@ -100,7 +100,7 @@ describe("advanced", () => {
     });
 
     test("Expression with multiple predefined variables", () => {
-        const code = `const a = 2 + 5 ;
+        const code = `const a = 2 + 5;
                 const b = 6 + 1;
                 const c = a + b;
                 const d = 3;
@@ -111,43 +111,43 @@ describe("advanced", () => {
         const expected = [
             {
                 name: "a",
-                text: "const a = 2 + 5",
+                text: "const a = 2 + 5;",
                 variableType: "const",
                 value: 7,
             },
             {
                 name: "b",
-                text: "const b = 6 + 1",
+                text: "const b = 6 + 1;",
                 variableType: "const",
                 value: 7,
             },
             {
                 name: "c",
-                text: "const c = a + b",
+                text: "const c = a + b;",
                 variableType: "const",
                 value: 14,
             },
             {
                 name: "d",
-                text: "const d = 3",
+                text: "const d = 3;",
                 variableType: "const",
                 value: 3,
             },
             {
                 name: "e",
-                text: "var e = d + 2",
+                text: "var e = d + 2;",
                 variableType: "var",
                 value: 5,
             },
             {
                 name: "f",
-                text: "const f = 2 + c",
+                text: "const f = 2 + c;",
                 variableType: "const",
                 value: 16,
             },
             {
                 name: "g",
-                text: "const g = 6 + (5 + 2)",
+                text: "const g = 6 + (5 + 2);",
                 variableType: "const",
                 value: 13,
             },
@@ -164,7 +164,7 @@ describe("advanced", () => {
         const expected = [
             {
                 name: "x",
-                text: "const x = 1 + 2",
+                text: "const x = 1 + 2;",
                 variableType: "const",
                 value: 3,
             },
