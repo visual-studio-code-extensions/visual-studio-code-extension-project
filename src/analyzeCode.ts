@@ -89,13 +89,12 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 visitVariableStatement(child)
             );
         } else if (ts.isIfStatement(node)) {
-            if(processExpression(node.expression, detectedVariableStatements))
-            {
+            if (
+                processExpression(node.expression, detectedVariableStatements)
+            ) {
                 //get into the if statments
-            }
-            else
-            {
-                //get into the else block statemenet 
+            } else {
+                //get into the else block statemenet
             }
         }
     }
@@ -155,10 +154,8 @@ function ApplyBinaryOperation(
             return regularOperation(left, right);
         } else if (numberBoolOperation !== undefined) {
             return numberBoolOperation(left, right);
-        }
-        else
-        {
-            throw new Error("Can't process this Binary Expression")
+        } else {
+            throw new Error("Can't process this Binary Expression");
         }
     } else {
         return undefined;
@@ -376,6 +373,10 @@ function processExpression(
                 return undefined;
             }
         }
+    } else if (node.kind === ts.SyntaxKind.TrueKeyword) {
+        return true;
+    } else if (node.kind === ts.SyntaxKind.FalseKeyword) {
+        return false;
     } else {
         throw new Error("Cannot process this expression: " + node.getText());
     }
