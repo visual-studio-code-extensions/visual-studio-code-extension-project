@@ -50,7 +50,7 @@ describe("basic", () => {
                 variableType: "const",
                 value: 9,
             },
-        ].map(x => expect.objectContaining(x));
+        ].map((x) => expect.objectContaining(x));
 
         expect(actual).toEqual(expect.arrayContaining(expected));
 
@@ -74,8 +74,6 @@ describe("basic", () => {
 });
 
 describe("advanced", () => {
-
-
     test("Edit variable", () => {
         const code = `var y = 2 + 5 ;
                 y = 2;`;
@@ -279,6 +277,4 @@ describe("advanced", () => {
     //         },
     //     ]);
     // });
-
-
 });

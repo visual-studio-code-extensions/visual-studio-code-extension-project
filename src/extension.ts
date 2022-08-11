@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (!activeEditor) {
             return;
         }
-        
+
         const text = activeEditor.document.getText();
 
         const filename = activeEditor.document.fileName;
