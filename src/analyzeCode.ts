@@ -1,6 +1,7 @@
 import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
+import { getNodePosition } from "./getNodePosition";
 import { Stack } from "./stack";
 
 /**
@@ -72,23 +73,18 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
 
                     text: node.getText(),
 
-                    variableType: variableType.getText(),
+            detectedVariableStatements.push({
+                name: expression.name.getText(),
 
-                    expressionLocation: {
-                        startLine: expressionLocation.startLine,
-                        endLine: expressionLocation.endLine,
-                        startCharacter: expressionLocation.startCharacter,
-                        endCharacter: expressionLocation.endCharacter,
-                    },
+                value: variableValue,
+                //TODO: add you cant change constants and so
+                variableType: variableType.getText(),
+                text: node.getText(),
 
-                    identifierLocation: {
-                        startLine: identifierLocation.startLine,
-                        endLine: identifierLocation.endLine,
-                        startCharacter: identifierLocation.startCharacter,
-                        endCharacter: identifierLocation.endCharacter,
-                    },
-                });
+                expressionLocation,
+                identifierLocation,
             });
+                });
         } else if (ts.isExpressionStatement(node)) {
             const nodeExpression = node.expression;
             const updatedVariablesArray = editVariables(
@@ -181,26 +177,12 @@ function editVariables(
 
         detectedVariableStatements.push({
             name: detectedVariableStatements[elementIndex].name,
-
             value: newVariableValue,
-            expressionLocation: {
-                startLine: expressionLocation.startLine,
-                endLine: expressionLocation.endLine,
-                startCharacter: expressionLocation.startCharacter,
-                endCharacter: expressionLocation.endCharacter,
-            },
-
-            identifierLocation: {
-                startLine: identifierLocation.startLine,
-                endLine: identifierLocation.endLine,
-                startCharacter: identifierLocation.startCharacter,
-                endCharacter: identifierLocation.endCharacter,
-            },
-
-            text: nodeExpression.getText(),
-
             //TODO: add you cant change constants and so
             variableType: detectedVariableStatements[elementIndex].variableType,
+            text: nodeExpression.getText(),
+            expressionLocation,
+            identifierLocation,
         });
 
         return detectedVariableStatements;
@@ -254,20 +236,10 @@ function editVariables(
 
                     variableType:
                         detectedVariableStatements[elementIndex].variableType,
+                    text: nodeExpression.getText(),
 
-                    expressionLocation: {
-                        startLine: expressionLocation.startLine,
-                        endLine: expressionLocation.endLine,
-                        startCharacter: expressionLocation.startCharacter,
-                        endCharacter: expressionLocation.endCharacter,
-                    },
-
-                    identifierLocation: {
-                        startLine: identifierLocation.startLine,
-                        endLine: identifierLocation.endLine,
-                        startCharacter: identifierLocation.startCharacter,
-                        endCharacter: identifierLocation.endCharacter,
-                    },
+                    expressionLocation,
+                    identifierLocation,
                 });
                 return detectedVariableStatements;
             } else {
@@ -281,18 +253,6 @@ function editVariables(
         }
     }
     return undefined;
-}
-
-function getNodePosition(sourceFile: ts.SourceFile, node: ts.Node) {
-    const start = ts.getLineAndCharacterOfPosition(sourceFile, node.pos);
-
-    const end = ts.getLineAndCharacterOfPosition(sourceFile, node.end);
-
-    const startLine = start.line;
-    const endLine = end.line;
-    const startCharacter = start.character;
-    const endCharacter = end.character;
-    return { startLine, endLine, startCharacter, endCharacter };
 }
 
 function processExpression(
@@ -326,10 +286,10 @@ function processExpression(
         //in case variables were defined just with one numeric literal for example: const x = 2;
         return parseFloat(node.getText());
     } else if (ts.isIdentifier(node)) {
-        const identifiervalue = detectedVariableStatements.find((variables) => {
+        const identifierValue = detectedVariableStatements.find((variables) => {
             return variables.name === node.getText();
         });
-        if (identifiervalue === undefined) {
+        if (identifierValue === undefined) {
             throw new Error(
                 "Identifier" +
                     node.getText() +
@@ -337,7 +297,7 @@ function processExpression(
             );
         }
 
-        return identifiervalue.value;
+        return identifierValue.value;
     } else if (ts.isParenthesizedExpression(node)) {
         //in case we encounter a (...) situation, for example const a = 2 + (2 + 4)
         return processExpression(node.expression, detectedVariableStatements);

@@ -6,20 +6,23 @@ export function activate(context: vscode.ExtensionContext) {
 
     let timeout: NodeJS.Timer | undefined = undefined;
 
+    const color = new vscode.ThemeColor("myextension.largeNumberBackground");
+
     const variableDecorationType = vscode.window.createTextEditorDecorationType(
         {
             borderWidth: "1px",
             borderStyle: "solid",
             overviewRulerColor: "blue",
+            color,
             overviewRulerLane: vscode.OverviewRulerLane.Right,
-            light: {
-                // this color will be used in light color themes
-                borderColor: "pink",
-            },
-            dark: {
-                // this color will be used in dark color themes
-                borderColor: "lightblue",
-            },
+            // light: {
+            //     // this color will be used in light color themes
+            //     borderColor: "pink",
+            // },
+            // dark: {
+            //     // this color will be used in dark color themes
+            //     borderColor: "lightblue",
+            // },
         }
     );
 
@@ -29,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (!activeEditor) {
             return;
         }
-        
+
         const text = activeEditor.document.getText();
 
         const filename = activeEditor.document.fileName;
