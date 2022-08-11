@@ -2,7 +2,7 @@ import { CodeLocation } from "./CodeLocation";
 
 export interface VariableStatementAnalysis {
     name: string;
-    value: number;
+    value: number | boolean;
     variableType: string;
     text: string;
     expressionLocation: CodeLocation;

@@ -1,4 +1,4 @@
-import ts from "typescript";
+import ts, { BinaryOperatorToken } from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
@@ -30,9 +30,7 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
     //Create array that will hold the variables that we want to work with.
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
 
-    const stack = new Stack<VariableStatementAnalysis[]>(
-        detectedVariableStatements
-    );
+    const stack = new Stack<VariableStatementAnalysis[]>();
 
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
@@ -87,9 +85,18 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
                 detectedVariableStatements = updatedVariablesArray;
             }
         } else if (ts.isBlock(node)) {
-            // node.statements.forEach((child: ts.Node) =>
-            //     visitVariableStatement(child)
-            // );
+            node.statements.forEach((child: ts.Node) =>
+                visitVariableStatement(child)
+            );
+        } else if (ts.isIfStatement(node)) {
+            if(processExpression(node.expression, detectedVariableStatements))
+            {
+                //get into the if statments
+            }
+            else
+            {
+                //get into the else block statemenet 
+            }
         }
     }
     // iterate through source file searching for variable statements
@@ -108,10 +115,20 @@ const operations = new Map<ts.SyntaxKind, (a: number, b: number) => number>([
 ]);
 
 //Not used yet, keep commented for future uses and boolean expression processing
-// const numberBoolOperations = new Map<ts.SyntaxKind, (a: number, b:number) => boolean>([
-//     [ts.SyntaxKind.EqualsEqualsEqualsToken, (a: number, b: number) => a === b],
-//     [ts.SyntaxKind.ExclamationEqualsEqualsToken, (a: number, b: number) => a !== b],
-// ]);
+const numberBoolOperations = new Map<
+    ts.SyntaxKind,
+    (a: number, b: number) => boolean
+>([
+    [ts.SyntaxKind.EqualsEqualsEqualsToken, (a: number, b: number) => a === b],
+    [
+        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+        (a: number, b: number) => a !== b,
+    ],
+    [ts.SyntaxKind.LessThanToken, (a: number, b: number) => a < b],
+    [ts.SyntaxKind.LessThanEqualsToken, (a: number, b: number) => a <= b],
+    [ts.SyntaxKind.GreaterThanToken, (a: number, b: number) => a > b],
+    [ts.SyntaxKind.GreaterThanEqualsToken, (a: number, b: number) => a >= b],
+]);
 
 const postFixUnaryExpression = new Map<ts.SyntaxKind, (a: number) => number>([
     [ts.SyntaxKind.PlusPlusToken, (a: number) => a + 1],
@@ -125,6 +142,28 @@ const preFixUnaryExpression = new Map<ts.SyntaxKind, (a: number) => number>([
     [ts.SyntaxKind.MinusToken, (a: number) => -a],
 ]);
 
+function ApplyBinaryOperation(
+    opToken: ts.BinaryExpression["operatorToken"],
+    left: number | boolean,
+    right: number | boolean
+) {
+    const regularOperation = operations.get(opToken.kind);
+    const numberBoolOperation = numberBoolOperations.get(opToken.kind);
+
+    if (typeof left === "number" && typeof right === "number") {
+        if (regularOperation !== undefined) {
+            return regularOperation(left, right);
+        } else if (numberBoolOperation !== undefined) {
+            return numberBoolOperation(left, right);
+        }
+        else
+        {
+            throw new Error("Can't process this Binary Expression")
+        }
+    } else {
+        return undefined;
+    }
+}
 function editVariables(
     node: ts.ExpressionStatement,
     sourceFile: ts.SourceFile,
@@ -206,6 +245,8 @@ function editVariables(
                 nodeExpression.operator
             );
 
+            const value = detectedVariableStatements[elementIndex].value;
+
             const expressionLocation = getNodePosition(
                 sourceFile,
                 nodeExpression
@@ -216,13 +257,12 @@ function editVariables(
                 nodeExpression.operand
             );
 
-            if (operation !== undefined) {
+            //value has to be a number because you can't do True++
+            if (operation !== undefined && typeof value === "number") {
                 detectedVariableStatements.push({
                     name: detectedVariableStatements[elementIndex].name,
 
-                    value: operation(
-                        detectedVariableStatements[elementIndex].value
-                    ),
+                    value: operation(value),
 
                     text: node.getText(),
 
@@ -255,7 +295,7 @@ function processExpression(
         | ts.PrefixUnaryExpression
         | undefined,
     detectedVariableStatements: VariableStatementAnalysis[]
-): number | undefined {
+): number | boolean | undefined {
     if (node === undefined) {
         throw new Error("Expression is undefined");
     }
@@ -263,14 +303,9 @@ function processExpression(
     if (ts.isBinaryExpression(node)) {
         const left = processExpression(node.left, detectedVariableStatements);
         const right = processExpression(node.right, detectedVariableStatements);
-        const operation = operations.get(node.operatorToken.kind);
 
-        if (
-            operation !== undefined &&
-            left !== undefined &&
-            right !== undefined
-        ) {
-            return operation(left, right);
+        if (left !== undefined && right !== undefined) {
+            return ApplyBinaryOperation(node.operatorToken, left, right);
         }
         return undefined;
     } else if (ts.isNumericLiteral(node)) {
@@ -309,11 +344,11 @@ function processExpression(
 
             //Get operation from the map and apply it
             const operation = preFixUnaryExpression.get(node.operator);
+            const value = detectedVariableStatements[elementIndex].value;
+
             //Apply the correct operation
-            if (operation !== undefined) {
-                return operation(
-                    detectedVariableStatements[elementIndex].value
-                );
+            if (operation !== undefined && typeof value === "number") {
+                return operation(value);
             }
             return undefined;
         } else {
@@ -335,7 +370,7 @@ function processExpression(
 
             //Get operation from the map and apply it
             const operation = preFixUnaryExpression.get(node.operator);
-            if (value !== undefined && operation !== undefined) {
+            if (typeof value === "number" && operation !== undefined) {
                 return operation(value);
             } else {
                 return undefined;

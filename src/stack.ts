@@ -9,7 +9,7 @@ interface IStack<T> {
 export class Stack<T> implements IStack<T> {
     private storage: T[] = [];
 
-    constructor(mainDetectedVariableStatements: VariableStatementAnalysis[]) {}
+    constructor() {}
 
     push(item: T): void {
         this.storage.push(item);
@@ -25,5 +25,9 @@ export class Stack<T> implements IStack<T> {
 
     size(): number {
         return this.storage.length;
+    }
+
+    empty(): void {
+        this.storage.splice(0);
     }
 }
