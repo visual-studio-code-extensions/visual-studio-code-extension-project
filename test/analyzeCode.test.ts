@@ -175,32 +175,37 @@ describe("advanced", () => {
         expectSubset(actual, expected);
     });
 
-    // test("multi assignment", () => {
-    //     const code = `let x = 1;
-    //     if (true) {
-    //         let x = 2;
-    //         let a = x;
-    //     }`;
+    test("multi assignment", () => {
+        const code = `let x = 1;
+        if (true) {
+            let x = 2;
+            let a = x;
+        }`;
 
-    //     const statements = analyzeCode(code);
 
-    //     expect(statements).toStrictEqual([
-    //         {
-    //             name: "x",
-    //             text: "let x = 2",
-    //             variableType: "let",
-    //             value: 2,
-    //             startLine: 0,
-    //             startCharacter: 0,
-    //         },
-    //         {
-    //             name: "a",
-    //             text: "let a = x",
-    //             variableType: "let",
-    //             value: 2,
-    //             startLine: 0,
-    //             startCharacter: 0,
-    //         },
-    //     ]);
-    // });
+        const expected = [
+            {
+                name: "x",
+                text: "let x = 1;",
+                variableType: "let",
+                value: 1,
+            },
+            {
+                name: "x",
+                text: "let x = 2;",
+                variableType: "let",
+                value: 2,
+            },
+            {
+                name: "a",
+                text: "let a = x;",
+                variableType: "let",
+                value: 2,
+            },
+        ];
+        const actual = analyzeCode(code);
+
+        expectSubset(actual, expected);
+
+    });
 });

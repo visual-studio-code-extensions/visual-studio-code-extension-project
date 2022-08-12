@@ -92,16 +92,20 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
             if (
                 processExpression(node.expression, detectedVariableStatements)
             ) {
-                //get into the if statments
-            } else {
-                //get into the else block statemenet
+                visitVariableStatement(node.thenStatement);
+            } else if (node.elseStatement !== undefined) {
+                visitVariableStatement(node.elseStatement);
             }
         }
     }
     // iterate through source file searching for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
 
-    return detectedVariableStatements;
+    const result = [
+        ...new Set(detectedVariableStatements.map((e) => JSON.stringify(e))),
+    ].map((e) => JSON.parse(e));
+
+    return result;
 }
 
 const operations = new Map<ts.SyntaxKind, (a: number, b: number) => number>([
@@ -113,8 +117,7 @@ const operations = new Map<ts.SyntaxKind, (a: number, b: number) => number>([
     [ts.SyntaxKind.PercentToken, (a: number, b: number) => a % b],
 ]);
 
-//Not used yet, keep commented for future uses and boolean expression processing
-const numberBoolOperations = new Map<
+const numberBooleanOperations = new Map<
     ts.SyntaxKind,
     (a: number, b: number) => boolean
 >([
@@ -141,19 +144,40 @@ const preFixUnaryExpression = new Map<ts.SyntaxKind, (a: number) => number>([
     [ts.SyntaxKind.MinusToken, (a: number) => -a],
 ]);
 
+const booleanOperations = new Map<
+    ts.SyntaxKind,
+    (a: boolean, b: boolean) => boolean
+>([
+    [
+        ts.SyntaxKind.EqualsEqualsEqualsToken,
+        (a: boolean, b: boolean) => a === b,
+    ],
+    [
+        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+        (a: boolean, b: boolean) => a !== b,
+    ],
+]);
+
 function ApplyBinaryOperation(
     opToken: ts.BinaryExpression["operatorToken"],
     left: number | boolean,
     right: number | boolean
 ) {
     const regularOperation = operations.get(opToken.kind);
-    const numberBoolOperation = numberBoolOperations.get(opToken.kind);
+    const numberBooleanOperation = numberBooleanOperations.get(opToken.kind);
+    const booleanOperation = booleanOperations.get(opToken.kind);
 
     if (typeof left === "number" && typeof right === "number") {
         if (regularOperation !== undefined) {
             return regularOperation(left, right);
-        } else if (numberBoolOperation !== undefined) {
-            return numberBoolOperation(left, right);
+        } else if (numberBooleanOperation !== undefined) {
+            return numberBooleanOperation(left, right);
+        } else {
+            throw new Error("Can't process this Binary Expression");
+        }
+    } else if (typeof left === "boolean" && typeof right === "boolean") {
+        if (booleanOperation !== undefined) {
+            return booleanOperation(left, right);
         } else {
             throw new Error("Can't process this Binary Expression");
         }
