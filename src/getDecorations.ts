@@ -23,5 +23,7 @@ export function getDecorations(text: string): vscode.DecorationOptions[] {
         return value;
     });
 
+    // TODO: show for blocks
+
     return decorations;
 }

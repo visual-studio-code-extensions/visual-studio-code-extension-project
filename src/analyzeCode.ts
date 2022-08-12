@@ -87,6 +87,8 @@ export function analyzeCode(code: string): CodeAnalysis {
     // iterate through source file searching for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
 
+
+    // TODO: actually do block analysis
     return {
         variableStatementAnalysis: detectedVariableStatements,
         blockAnalysis: [],
