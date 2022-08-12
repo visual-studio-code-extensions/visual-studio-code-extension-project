@@ -8,7 +8,7 @@ describe("basic", () => {
     test("Arithmetic expression", () => {
         const code = "const x = 2 + 5 + 2;";
 
-        const actual = analyzeCode(code);
+        const actual = analyzeCode(code).variableStatementAnalysis;
 
         const expected = [
             {
@@ -27,7 +27,7 @@ describe("advanced", () => {
         const code = `var y = 2 + 5 ;
                 y = 2;`;
 
-        const actual = analyzeCode(code);
+        const actual = analyzeCode(code).variableStatementAnalysis;
 
         const expected = [
             {
@@ -94,7 +94,7 @@ describe("advanced", () => {
             },
         ];
 
-        const actual = analyzeCode(code);
+        const actual = analyzeCode(code).variableStatementAnalysis;
 
         expectSubset(actual, expected);
     });
@@ -153,7 +153,7 @@ describe("advanced", () => {
             },
         ];
 
-        const actual = analyzeCode(code);
+        const actual = analyzeCode(code).variableStatementAnalysis;
 
         expectSubset(actual, expected);
     });
@@ -170,7 +170,7 @@ describe("advanced", () => {
             },
         ];
 
-        const actual = analyzeCode(code);
+        const actual = analyzeCode(code).variableStatementAnalysis;
 
         expectSubset(actual, expected);
     });
@@ -182,7 +182,7 @@ describe("advanced", () => {
     //         let a = x;
     //     }`;
 
-    //     const statements = analyzeCode(code);
+    //     const statements = analyzeCode(code).variableStatementAnalysis;
 
     //     expect(statements).toStrictEqual([
     //         {

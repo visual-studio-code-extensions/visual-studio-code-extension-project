@@ -3,12 +3,13 @@ import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
+import {CodeAnalysis} from "./CodeAnalysis"
 
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
  */
-export function analyzeCode(code: string): VariableStatementAnalysis[] {
+export function analyzeCode(code: string): CodeAnalysis {
     const sourceFileName = "code.ts";
 
     const program = createProgramFromFiles(
@@ -86,7 +87,10 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
     // iterate through source file searching for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
 
-    return detectedVariableStatements;
+    return {
+        variableStatementAnalysis: detectedVariableStatements,
+        blockAnalysis: [],
+    };
 }
 
 const operations = new Map<ts.SyntaxKind, (a: number, b: number) => number>([
