@@ -8,7 +8,7 @@ describe("basic", () => {
     test("Arithmetic expression", () => {
         const code = "const x = 2 + 5 + 2;";
 
-        const actual = analyzeCode(code);
+        const actual = analyzeCode(code).variableStatementAnalysis;
 
         const expected = [
             {

@@ -3,12 +3,13 @@ import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
 import { Stack } from "./stack";
+import {CodeAnalysis} from "./CodeAnalysis"
 
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
  */
-export function analyzeCode(code: string): VariableStatementAnalysis[] {
+export function analyzeCode(code: string): CodeAnalysis {
     const sourceFileName = "code.ts";
 
     const program = createProgramFromFiles(
@@ -101,11 +102,12 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
     // iterate through source file searching for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
 
-    const result = [
-        ...new Set(detectedVariableStatements.map((e) => JSON.stringify(e))),
-    ].map((e) => JSON.parse(e));
 
-    return result;
+    // TODO: actually do block analysis
+    return {
+        variableStatementAnalysis: detectedVariableStatements,
+        blockAnalysis: [],
+    };
 }
 
 const operations = new Map<ts.SyntaxKind, (a: number, b: number) => number>([
