@@ -22,33 +22,30 @@ describe("basic", () => {
     });
 });
 
-describe("advanced", () => {
-    test("Edit variable", () => {
-        const code = `var y = 2 + 5;
+test("Edit variable", () => {
+    const code = `let y = 2 + 5 ;
                 y = 2;`;
 
-        const actual = analyzeCode(code);
+    const statements = analyzeCode(code);
 
-        const expected = [
-            {
-                name: "y",
-                text: "var y = 2 + 5;",
-                variableType: "var",
-                value: 7,
-            },
-            {
-                name: "y",
-                text: "y = 2;",
-                variableType: "var",
-                value: 2,
-            },
-        ];
+    expect(statements).toStrictEqual([
+        {
+            name: "y",
+            text: "var y = 2 + 5",
+            variableType: "let",
+            value: 7,
+        },
+        {
+            name: "y",
+            text: "y = 2",
+            variableType: "let",
+            value: 2,
+        },
+    ]);
+});
 
-        expectSubset(actual, expected);
-    });
-
-    test("PrefixUnaryExpression and PrefixUnaryExpression", () => {
-        const code = `let f = -5;
+test("PrefixUnaryExpression and PrefixUnaryExpression", () => {
+    const code = `let f = -5;
                 let w = +6;
                  --f;
                  ++w;
@@ -208,4 +205,4 @@ describe("advanced", () => {
         expectSubset(actual, expected);
 
     });
-});
+
