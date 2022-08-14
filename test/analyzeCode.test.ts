@@ -91,7 +91,7 @@ test("PrefixUnaryExpression and PrefixUnaryExpression", () => {
         },
     ];
 
-    const actual = analyzeCode(code);
+    const actual = analyzeCode(code).variableStatementAnalysis;
 
     expectSubset(actual, expected);
 });
@@ -150,7 +150,7 @@ test("Expression with multiple predefined variables", () => {
         },
     ];
 
-    const actual = analyzeCode(code);
+    const actual = analyzeCode(code).variableStatementAnalysis;
 
     expectSubset(actual, expected);
 });
@@ -167,7 +167,7 @@ test("simple assignment", () => {
         },
     ];
 
-    const actual = analyzeCode(code);
+    const actual = analyzeCode(code).variableStatementAnalysis;
 
     expectSubset(actual, expected);
 });
@@ -199,7 +199,7 @@ test("multi assignment", () => {
             value: 2,
         },
     ];
-    const actual = analyzeCode(code);
+    const actual = analyzeCode(code).variableStatementAnalysis;
 
     expectSubset(actual, expected);
 });

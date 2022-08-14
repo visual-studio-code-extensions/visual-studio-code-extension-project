@@ -89,15 +89,16 @@ export function analyzeCode(code: string): CodeAnalysis {
             node.statements.forEach((child: ts.Node) =>
                 visitVariableStatement(child)
             );
-        } else if (ts.isIfStatement(node)) {
-            if (
-                processExpression(node.expression, detectedVariableStatements)
-            ) {
-                visitVariableStatement(node.thenStatement);
-            } else if (node.elseStatement !== undefined) {
-                visitVariableStatement(node.elseStatement);
-            }
         }
+        //  else if (ts.isIfStatement(node)) {
+        //     if (
+        //         processExpression(node.expression, detectedVariableStatements)
+        //     ) {
+        //         visitVariableStatement(node.thenStatement);
+        //     } else if (node.elseStatement !== undefined) {
+        //         visitVariableStatement(node.elseStatement);
+        //     }
+        // }
     }
     // iterate through source file searching for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
