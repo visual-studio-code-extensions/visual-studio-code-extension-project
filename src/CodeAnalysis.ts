@@ -1,7 +1,6 @@
-import {VariableStatementAnalysis} from "./VariableStatementAnalysis"
+import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 
-import {BlockAnalysis} from "./BlockAnalysis"
-
+import { BlockAnalysis } from "./BlockAnalysis";
 
 export interface CodeAnalysis {
     blockAnalysis: BlockAnalysis[];

@@ -1,4 +1,3 @@
-import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 interface IStack<T> {
     push(item: T): void;
     pop(): T | undefined;
@@ -8,8 +7,6 @@ interface IStack<T> {
 
 export class Stack<T> implements IStack<T> {
     private storage: T[] = [];
-
-    constructor() {}
 
     push(item: T): void {
         this.storage.push(item);

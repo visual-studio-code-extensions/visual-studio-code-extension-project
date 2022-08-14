@@ -2,7 +2,7 @@ import { analyzeCode } from "./analyzeCode";
 import * as vscode from "vscode";
 
 export function getDecorations(text: string): vscode.DecorationOptions[] {
-    const {variableStatementAnalysis} = analyzeCode(text);
+    const { variableStatementAnalysis } = analyzeCode(text);
 
     const decorations = variableStatementAnalysis.map((statement) => {
         const { startLine, startCharacter, endCharacter, endLine } =
