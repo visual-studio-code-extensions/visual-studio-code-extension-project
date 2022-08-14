@@ -1,12 +1,12 @@
 {
-    "name": "decorator-sample",
-    "description": "Sample for the decorator API",
+    "name": "Typescript-Parser",
+    "description": "Typescript extension that shows value of variables through static analysis, currently support : boolean, numbers ",
     "version": "0.0.1",
-    "publisher": "vscode-samples",
     "license": "MIT",
     "engines": {
         "vscode": "^1.32.0"
     },
+    "publisher": "medFive",
     "repository": {
         "url": "https://github.com/Microsoft/vscode-extension-samples"
     },
@@ -31,32 +31,43 @@
         ]
     },
     "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "build": "npm run compile",
-        "compile": "tsc -p ./",
-        "clean": "",
+        "prepack": "npm run build && npm run doc && npm run test",
+        "build": "npm run style && npm run lint && npm run clean && npm run compile",
+        "doc": "npm run doc-extract && npm run doc-document",
+        "test": "./node_modules/.bin/jest --no-cache --config ./config/jest.config.js",
+        "test-coverage": "./node_modules/.bin/jest --no-cache --config ./config/jest.config.js --coverage",
         "style": "npm run prettier",
         "style-check": "npm run prettier-check",
         "lint": "npm run eslint",
-        "eslint": "./node_modules/.bin/eslint --config ./config/eslint.json --no-eslintrc \"@(src|test|scripts)/**/*.@(ts|js)\"",
-        "prettier": "./node_modules/.bin/prettier --config ./config/prettier.json --write \"@(src|test|scripts)/**/*.@(ts|js|md|html|css|json)\"",
-        "prettier-check": "./node_modules/.bin/prettier --config ./config/prettier.json --check \"@(src|test)/**/*.@(ts|js|md|html|css|json)\"",
-        "test": "./node_modules/.bin/jest --no-cache --config ./config/jest.config.js",
-        "t": "npm run test -- -t basic",
-        "watch": "tsc -watch -p ./"
+        "lint-fix": "npm run eslint-fix",
+        "clean":"node .\\scripts\\clean.js dist && node .\\scripts\\clean.js temp",
+        "compile": ".\\node_modules\\.bin\\tsc --project .\\tsconfig.json",
+        "prettier": ".\\node_modules\\.bin\\prettier --config .\\config\\prettier.json --write \"@(src|test|scripts)/**/*.@(ts|js|md|html|css|json)\"",
+        "prettier-check": ".\\node_modules\\.bin\\prettier --config .\\config\\prettier.json --check \"@(src|test)/**/*.@(ts|js|md|html|css|json)\"",
+        "eslint": ".\\node_modules\\.bin\\eslint --config .\\config\\eslint.json --no-eslintrc \"@(src|test|scripts)/**/*.@(ts|js)\"",
+        "eslint-fix": ".\\node_modules\\.bin\\eslint --config .\\config\\eslint.json --no-eslintrc --fix \"@(src|test|scripts)/**/*.@(ts|js)\"",
+        "api-extractor": ".\\node_modules\\.bin\\api-extractor",
+        "doc-extract": ".\\node_modules\\.bin\\api-extractor run --local --verbose",
+        "doc-document": ".\\node_modules\\.bin\\api-documenter markdown --input-folder .\\temp --output-folder .\\doc",
+
+        "check": ".\\node_modules\\.bin\\ts-node scripts\\check.ts",
+        "check-install": ".\\node_modules\\.bin\\ts-node scripts\\check-install.ts",
+        "check-environment": ".\\node_modules\\.bin\\ts-node scripts\\check-environment.ts",
+        "start": ".\\node_modules\\.bin\\ts-node test\\main.ts"
     },
     "dependencies": {
-        "typescript": "^4.7.2"
+        "typescript": "^4.7.2",
+        "vsce": "^2.10.0"
     },
     "devDependencies": {
+        "@types/jest": "^28.1.1",
         "@types/node": "^16.11.7",
         "@types/vscode": "^1.32.0",
-        "@types/jest": "^28.1.1",
         "@typescript-eslint/eslint-plugin": "^5.30.0",
         "@typescript-eslint/parser": "^5.30.0",
         "eslint": "^8.13.0",
-        "prettier": "^2.7.1",
         "jest": "^28.1.3",
+        "prettier": "^2.7.1",
         "ts-jest": "^28.0.5"
     }
 }
