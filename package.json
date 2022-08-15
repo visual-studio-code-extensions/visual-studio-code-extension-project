@@ -2,7 +2,7 @@
     "name": "typescript-tarser",
     "displayName": "Typescript Parser",
     "description": "Typescript extension that shows value of variables through static analysis, for example defining var x = 5 + 6 will show 11 when you hover over the variable name. Currently support : boolean, numbers ",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "license": "MIT",
     "engines": {
         "vscode": "^1.32.0"
@@ -17,7 +17,8 @@
     
     "preview": true,
     "repository": {
-        "url": "https://github.com/Microsoft/vscode-extension-samples"
+        "url": "https://github.com/visual-studio-code-extensions/visual-studio-code-extension-project"
+        
     },
     "categories": [
         "Programming Languages",
