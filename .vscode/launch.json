@@ -1,16 +1,53 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
+    "version": "0.2.0",
+    "configurations": [
+        {
             "name": "Launch Extension",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
+            "args": ["--extensionDevelopmentPath=${workspaceRoot}"],
             "stopOnEntry": false,
             "sourceMaps": true,
-            "outFiles": [ "${workspaceRoot}/out/**/*.js" ],
+            "outFiles": ["${workspaceRoot}/out/**/*.js"],
             "preLaunchTask": "npm: watch"
+        },
+        {
+            "name": "Jest",
+            "type": "node",
+            "request": "launch",
+            "skipFiles": ["<node_internals>/**", "node_modules/**"],
+            "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            "args": [
+                "${fileBasename}",
+                "--verbose",
+                "-i",
+                "--no-cache",
+                "--config=${workspaceFolder}/config/jest.config.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "ts-node",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "node",
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register/transpile-only"
+            ],
+
+            "args": ["${file}"],
+
+            "cwd": "${fileDirname}",
+            "internalConsoleOptions": "openOnSessionStart",
+            "skipFiles": ["<node_internals>/**", "node_modules/**"],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**"
+            ]
         }
-	]
+    ]
 }

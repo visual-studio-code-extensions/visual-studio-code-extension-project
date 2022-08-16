@@ -1,16 +1,10 @@
-import { NoSubstitutionTemplateLiteral } from "typescript";
+import { CodeLocation } from "./CodeLocation";
 
 export interface VariableStatementAnalysis {
     name: string;
-
-    expressionLocation: {
-        startLine: number;
-        endLine: number;
-        startCharacter: number;
-        endCharacter: number;
-    };
-
     value: number;
-    text: string;
     variableType: string;
+    text: string;
+    expressionLocation: CodeLocation;
+    identifierLocation: CodeLocation;
 }
