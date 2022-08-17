@@ -14,7 +14,7 @@ Are some technical limits, halting problem.
 
 ## Demo of solution
 
-F5 and open the `sample` folder and click `test.ts`.
+F5 and open the `sample` folder and click `sample.ts`.
 
 ## Future
 
