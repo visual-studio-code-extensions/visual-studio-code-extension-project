@@ -1,43 +1,4 @@
 {
-<<<<<<< HEAD
-	"name": "decorator-sample",
-	"description": "Sample for the decorator API",
-	"version": "0.0.1",
-	"publisher": "vscode-samples",
-	"license": "MIT",
-	"engines": {
-		"vscode": "^1.32.0"
-	},
-	"repository": {
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"*"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"colors": [
-			{
-				"id": "myextension.largeNumberBackground",
-				"description": "Background decoration color for large numbers",
-				"defaults": {
-					"dark": "#473a3a55",
-					"light": "#c0525255",
-					"highContrast": "#f6d0d055"
-				}
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"build": "npm run compile",
-		"compile": "tsc -p ./",
-		"clean": "",
-		"style": "npm run prettier",
-=======
     "name": "decorator-sample",
     "description": "Sample for the decorator API",
     "version": "0.0.1",
@@ -75,7 +36,6 @@
         "compile": "tsc -p ./",
         "clean": "",
         "style": "npm run prettier",
->>>>>>> 20b24b9b1a0f8fa9f92f067242671b55db50baf3
         "style-check": "npm run prettier-check",
         "lint": "npm run eslint",
         "eslint": "./node_modules/.bin/eslint --config ./config/eslint.json --no-eslintrc \"@(src|test|scripts)/**/*.@(ts|js)\"",
