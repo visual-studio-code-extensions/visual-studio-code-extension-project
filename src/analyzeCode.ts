@@ -12,7 +12,8 @@ import { BlockAnalysis } from "./BlockAnalysis";
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
  */
-export function analyzeCode(code: string){  //TODO: What would the return type be?
+export function analyzeCode(code: string) {
+    //TODO: What would the return type be?
     const sourceFileName = "code.ts";
 
     const program = createProgramFromFiles(
@@ -92,9 +93,8 @@ export function analyzeCode(code: string){  //TODO: What would the return type b
                 detectedVariableStatements = updatedVariablesArray;
             }
         } else if (ts.isBlock(node)) {
-
             //Create an empty array to recurse with on block number 1
-            
+
             processBlock(stack, node, blockAnalysis);
         }
         //  else if (ts.isIfStatement(node)) {
@@ -113,7 +113,7 @@ export function analyzeCode(code: string){  //TODO: What would the return type b
     // TODO: actually do block analysis
     return {
         variableStatementAnalysis: detectedVariableStatements,
-        Stack: stack
+        Stack: stack,
         //Block is only concerned about declaration of variables in blocks
     };
 }
@@ -122,34 +122,36 @@ function processBlock(
     stack: Stack<BlockAnalysis>,
     node: ts.Statement,
     blockAnalysis: BlockAnalysis
-) : Stack<BlockAnalysis>{
+): Stack<BlockAnalysis> {
     if (ts.isBlock(node)) {
         //recursively make empty arrays and add them to the stack if theres another scope
         let blockAnalysis: BlockAnalysis = {
             localVariables: [],
             referencedVariables: [],
         };
-       
-        node.statements.forEach((child: ts.Statement) => processBlock(stack, child, blockAnalysis));
+
+        node.statements.forEach((child: ts.Statement) =>
+            processBlock(stack, child, blockAnalysis)
+        );
         stack.push(blockAnalysis);
- 
     } else if (ts.isVariableStatement(node)) {
         let list = node.declarationList.declarations[0];
         blockAnalysis.localVariables.push({
             name: list.name.getText(),
-            shadows: false
+            shadows: false,
         });
-
-    } else if (ts.isExpressionStatement(node) && ts.isBinaryExpression(node.expression)) {
+    } else if (
+        ts.isExpressionStatement(node) &&
+        ts.isBinaryExpression(node.expression)
+    ) {
         let identifier = node.expression.left;
         blockAnalysis.localVariables.push({
             name: identifier.getText(),
-            shadows: false
+            shadows: false,
         });
     }
-    
+
     return stack;
-    
 }
 /**
  * recursively visits nodes and children

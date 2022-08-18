@@ -200,7 +200,7 @@ test("multi assignment", () => {
             value: 2,
         },
     ];
-    
+
     const actual = analyzeCode(code).Stack;
     expect(actual).toStrictEqual(expected);
     //expectSubset(actual, expected);
