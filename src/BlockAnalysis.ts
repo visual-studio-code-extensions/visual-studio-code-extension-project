@@ -13,7 +13,7 @@ export interface BlockAnalysis {
         name: string;
         // location: CodeLocation
         block: number; // blocks above the current block parent number
-    };
+    }[];
 }
 
 /*

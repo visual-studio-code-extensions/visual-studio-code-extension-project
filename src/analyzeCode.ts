@@ -1,4 +1,4 @@
-import ts from "typescript";
+import ts, { Block } from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
@@ -6,12 +6,13 @@ import { Stack } from "./stack";
 import { CodeAnalysis } from "./CodeAnalysis";
 import { processExpression } from "./coreAnalyzer";
 import { editVariables } from "./editVariable";
+import { BlockAnalysis } from "./BlockAnalysis";
 
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
  */
-export function analyzeCode(code: string): CodeAnalysis {
+export function analyzeCode(code: string){  //TODO: What would the return type be?
     const sourceFileName = "code.ts";
 
     const program = createProgramFromFiles(
@@ -32,8 +33,11 @@ export function analyzeCode(code: string): CodeAnalysis {
 
     //Create array that will hold the variables that we want to work with.
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
-
-    const stack = new Stack<VariableStatementAnalysis[]>();
+    let blockAnalysis: BlockAnalysis = {
+        localVariables: [],
+        referencedVariables: [],
+    };
+    let stack = new Stack<BlockAnalysis>();
 
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
@@ -88,9 +92,10 @@ export function analyzeCode(code: string): CodeAnalysis {
                 detectedVariableStatements = updatedVariablesArray;
             }
         } else if (ts.isBlock(node)) {
-            node.statements.forEach((child: ts.Node) =>
-                visitVariableStatement(child)
-            );
+
+            //Create an empty array to recurse with on block number 1
+            
+            processBlock(stack, node, blockAnalysis);
         }
         //  else if (ts.isIfStatement(node)) {
         //     if (
@@ -108,10 +113,44 @@ export function analyzeCode(code: string): CodeAnalysis {
     // TODO: actually do block analysis
     return {
         variableStatementAnalysis: detectedVariableStatements,
-        blockAnalysis: [],
+        Stack: stack
+        //Block is only concerned about declaration of variables in blocks
     };
 }
 
+function processBlock(
+    stack: Stack<BlockAnalysis>,
+    node: ts.Statement,
+    blockAnalysis: BlockAnalysis
+) : Stack<BlockAnalysis>{
+    if (ts.isBlock(node)) {
+        //recursively make empty arrays and add them to the stack if theres another scope
+        let blockAnalysis: BlockAnalysis = {
+            localVariables: [],
+            referencedVariables: [],
+        };
+       
+        node.statements.forEach((child: ts.Statement) => processBlock(stack, child, blockAnalysis));
+        stack.push(blockAnalysis);
+ 
+    } else if (ts.isVariableStatement(node)) {
+        let list = node.declarationList.declarations[0];
+        blockAnalysis.localVariables.push({
+            name: list.name.getText(),
+            shadows: false
+        });
+
+    } else if (ts.isExpressionStatement(node) && ts.isBinaryExpression(node.expression)) {
+        let identifier = node.expression.left;
+        blockAnalysis.localVariables.push({
+            name: identifier.getText(),
+            shadows: false
+        });
+    }
+    
+    return stack;
+    
+}
 /**
  * recursively visits nodes and children
  * @param node

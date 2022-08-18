@@ -27,4 +27,5 @@ export class Stack<T> implements IStack<T> {
     empty(): void {
         this.storage.splice(0);
     }
+
 }

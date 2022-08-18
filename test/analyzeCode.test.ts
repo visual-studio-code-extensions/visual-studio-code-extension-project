@@ -23,25 +23,26 @@ describe("basic", () => {
 });
 
 test("Edit variable", () => {
-    const code = `let y = 2 + 5 ;
+    const code = `let y = 2 + 5;
                 y = 2;`;
 
-    const statements = analyzeCode(code);
+    const actual = analyzeCode(code).variableStatementAnalysis;
 
-    expect(statements).toStrictEqual([
+    const expected = [
         {
             name: "y",
-            text: "var y = 2 + 5",
+            text: "let y = 2 + 5;",
             variableType: "let",
             value: 7,
         },
         {
             name: "y",
-            text: "y = 2",
+            text: "y = 2;",
             variableType: "let",
             value: 2,
         },
-    ]);
+    ];
+    expectSubset(actual, expected);
 });
 
 test("PrefixUnaryExpression and PrefixUnaryExpression", () => {
@@ -199,7 +200,8 @@ test("multi assignment", () => {
             value: 2,
         },
     ];
-    const actual = analyzeCode(code).variableStatementAnalysis;
-
-    expectSubset(actual, expected);
+    
+    const actual = analyzeCode(code).Stack;
+    expect(actual).toStrictEqual(expected);
+    //expectSubset(actual, expected);
 });
