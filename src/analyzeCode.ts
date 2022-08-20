@@ -149,6 +149,14 @@ function processBlock(
             name: identifier.getText(),
             shadows: false,
         });
+
+        if (ts.isIdentifier(node.expression.right)) {
+            let variable = node.expression.right;
+            blockAnalysis.referencedVariables.push({
+                name: variable.getText(),
+                block: 0,
+            });
+        }
     }
 
     return stack;

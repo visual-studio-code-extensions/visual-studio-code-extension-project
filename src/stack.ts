@@ -27,4 +27,11 @@ export class Stack<T> implements IStack<T> {
     empty(): void {
         this.storage.splice(0);
     }
+
+    getScopeNumber(input: T): number {
+        //Takes a blockAnalysis in our case and search the stack array for and return the index to which scope number this is
+        return this.storage.findIndex((scopes) => {
+            return scopes === input;
+        });
+    }
 }
