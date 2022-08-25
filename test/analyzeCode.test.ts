@@ -174,11 +174,14 @@ test("simple assignment", () => {
 });
 
 test("multi assignment", () => {
-    const code = `let x = 1;
+    const code = `{
+        {
+        let x = 1;
         if (true) {
-            let x = 2;
-            let a = x;
-        }`;
+            a = x;
+        }
+    }
+    }`;
 
     const expected = [
         {
@@ -187,21 +190,21 @@ test("multi assignment", () => {
             variableType: "let",
             value: 1,
         },
-        {
-            name: "x",
-            text: "let x = 2;",
-            variableType: "let",
-            value: 2,
-        },
-        {
-            name: "a",
-            text: "let a = x;",
-            variableType: "let",
-            value: 2,
-        },
+        // {
+        //     name: "x",
+        //     text: "let x = 2;",
+        //     variableType: "let",
+        //     value: 2,
+        // },
+        // {
+        //     name: "a",
+        //     text: "let a = x;",
+        //     variableType: "let",
+        //     value: 2,
+        // },
     ];
 
-    const actual = analyzeCode(code).Stack;
+    const actual = analyzeCode(code).blockAnalysis;
     expect(actual).toStrictEqual(expected);
     //expectSubset(actual, expected);
 });

@@ -1,8 +1,8 @@
-import ts, { Block } from "typescript";
+import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
-import { Stack } from "./stack";
+import { mapStack } from "./mapStack";
 import { CodeAnalysis } from "./CodeAnalysis";
 import { processExpression } from "./coreAnalyzer";
 import { editVariables } from "./editVariable";
@@ -12,7 +12,7 @@ import { BlockAnalysis } from "./BlockAnalysis";
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
  */
-export function analyzeCode(code: string) {
+export function analyzeCode(code: string): CodeAnalysis {
     //TODO: What would the return type be?
     const sourceFileName = "code.ts";
 
@@ -34,11 +34,9 @@ export function analyzeCode(code: string) {
 
     //Create array that will hold the variables that we want to work with.
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
-    let blockAnalysis: BlockAnalysis = {
-        localVariables: [],
-        referencedVariables: [],
-    };
-    let stack = new Stack<BlockAnalysis>();
+    let blockAnalysis: BlockAnalysis[] = [];
+    let stack = new mapStack();
+    const emptyMap = new Map<string, number>();
 
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
@@ -83,19 +81,19 @@ export function analyzeCode(code: string) {
                     identifierLocation,
                 });
             });
-        } else if (ts.isExpressionStatement(node)) {
-            const updatedVariablesArray = editVariables(
-                node,
-                sourceFile as ts.SourceFile,
-                detectedVariableStatements
-            );
-            if (updatedVariablesArray !== undefined) {
-                detectedVariableStatements = updatedVariablesArray;
-            }
+            // } else if (ts.isExpressionStatement(node)) {
+            //     const updatedVariablesArray = editVariables(
+            //         node,
+            //         sourceFile as ts.SourceFile,
+            //         detectedVariableStatements
+            //     );
+            //     if (updatedVariablesArray !== undefined) {
+            //         detectedVariableStatements = updatedVariablesArray;
+            //     }
         } else if (ts.isBlock(node)) {
             //Create an empty array to recurse with on block number 1
 
-            processBlock(stack, node, blockAnalysis);
+            processBlock(stack, node, blockAnalysis, emptyMap);
         }
         //  else if (ts.isIfStatement(node)) {
         //     if (
@@ -113,54 +111,79 @@ export function analyzeCode(code: string) {
     // TODO: actually do block analysis
     return {
         variableStatementAnalysis: detectedVariableStatements,
-        Stack: stack,
+        blockAnalysis: blockAnalysis,
         //Block is only concerned about declaration of variables in blocks
     };
 }
 
 function processBlock(
-    stack: Stack<BlockAnalysis>,
+    stack: mapStack,
     node: ts.Statement,
-    blockAnalysis: BlockAnalysis
-): Stack<BlockAnalysis> {
+    blockAnalysis: BlockAnalysis[],
+    map: Map<string, number>
+): mapStack {
     if (ts.isBlock(node)) {
         //recursively make empty arrays and add them to the stack if theres another scope
-        let blockAnalysis: BlockAnalysis = {
-            localVariables: [],
-            referencedVariables: [],
-        };
+        // let blockAnalysis: BlockAnalysis = {
+        //     localVariables: [],
+        //     referencedVariables: [],
+        // };
 
+        // node.statements.forEach((child: ts.Statement) =>
+        //     processBlock(stack, child, blockAnalysis)
+        // );
+        // stack.push(blockAnalysis);
+        //stack.push(new Map<string, number>());
+        const empty: BlockAnalysis = {
+            referencedVariables: [],
+            localVariables: [],
+        };
+        stack.push(map);
+        blockAnalysis.push(empty);
         node.statements.forEach((child: ts.Statement) =>
-            processBlock(stack, child, blockAnalysis)
+            processBlock(stack, child, blockAnalysis, map)
         );
-        stack.push(blockAnalysis);
+        stack.pop();
     } else if (ts.isVariableStatement(node)) {
         let list = node.declarationList.declarations[0];
-        blockAnalysis.localVariables.push({
-            name: list.name.getText(),
-            shadows: false,
-        });
+        //In case its = identifier
+        if (list.initializer !== undefined) {
+            stack.set(list.name.getText(), 0);
+            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+                name: list.name.getText(),
+                shadows: stack.search(list.initializer.getText()),
+            });
+        } else {
+            stack.set(list.name.getText(), 0);
+            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+                name: list.name.getText(),
+                shadows: stack.search(list.name.getText()),
+            });
+        }
     } else if (
         ts.isExpressionStatement(node) &&
         ts.isBinaryExpression(node.expression)
     ) {
         let identifier = node.expression.left;
-        blockAnalysis.localVariables.push({
-            name: identifier.getText(),
-            shadows: false,
-        });
 
         if (ts.isIdentifier(node.expression.right)) {
+            stack.set(identifier.getText(), 0);
+            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+                name: identifier.getText(),
+                shadows: stack.search(node.expression.right.getText()),
+            });
+
             let variable = node.expression.right;
-            blockAnalysis.referencedVariables.push({
+            blockAnalysis[blockAnalysis.length - 1].referencedVariables.push({
                 name: variable.getText(),
-                block: 0,
+                block: stack.getScopeNumber(map),
             });
         }
     }
 
     return stack;
 }
+
 /**
  * recursively visits nodes and children
  * @param node
