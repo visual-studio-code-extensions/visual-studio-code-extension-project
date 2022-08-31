@@ -1,34 +1,20 @@
+import { createTrace, logTrace } from "./logTrace";
 import * as vscode from "vscode";
 import { getDecorations } from "./getDecorations";
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
-    console.log("decorator sample is activated");
+    console.log("TypeScript Static Analysis activated");
+    createTrace();
+    logTrace("activated");
 
     let timeout: NodeJS.Timer | undefined = undefined;
 
-    const color = new vscode.ThemeColor("myextension.largeNumberBackground");
-
-    const variableDecorationType = vscode.window.createTextEditorDecorationType(
-        {
-            borderWidth: "1px",
-            borderStyle: "solid",
-            overviewRulerColor: "blue",
-            color,
-            overviewRulerLane: vscode.OverviewRulerLane.Right,
-            // light: {
-            //     // this color will be used in light color themes
-            //     borderColor: "pink",
-            // },
-            // dark: {
-            //     // this color will be used in dark color themes
-            //     borderColor: "lightblue",
-            // },
-        }
-    );
-
     let activeEditor = vscode.window.activeTextEditor;
 
+    const variableDecorationType = getVariableDecorationType();
+
     function updateDecorations() {
+        logTrace("updateDecorations");
         if (!activeEditor) {
             return;
         }
@@ -41,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (isTsFile) {
             const decorations = getDecorations(text);
             activeEditor.setDecorations(variableDecorationType, decorations);
+            logTrace("wrote Decorations");
         }
     }
 
@@ -80,4 +67,37 @@ export function activate(context: vscode.ExtensionContext) {
         null,
         context.subscriptions
     );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand("typescriptStaticAnalysis.run", () => {
+            logTrace("manual run");
+            triggerUpdateDecorations(true);
+        })
+    );
+}
+
+function getVariableDecorationType() {
+    const color = new vscode.ThemeColor(
+        "typescriptStaticAnalysis.variableBackground"
+    );
+
+    const variableDecorationType = vscode.window.createTextEditorDecorationType(
+        {
+            //borderWidth: "0.1px",
+            //borderStyle: "solid",
+            //overviewRulerColor: "blue",
+            color,
+            //overviewRulerLane: vscode.OverviewRulerLane.Right,
+            // light: {
+            //     // this color will be used in light color themes
+            //     borderColor: "pink",
+            // },
+            // dark: {
+            //     // this color will be used in dark color themes
+            //     borderColor: "lightblue",
+            // },
+        }
+    );
+
+    return variableDecorationType;
 }
