@@ -175,12 +175,14 @@ test("simple assignment", () => {
 
 test("multi assignment", () => {
     const code = `{
+        let y = 5;
         {
         let x = 1;
-        if (true) {
-            a = x;
+            if (true) {
+                a = x;
+                b = y;
+            }
         }
-    }
     }`;
 
     const expected = [

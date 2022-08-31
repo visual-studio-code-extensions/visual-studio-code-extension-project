@@ -1,3 +1,5 @@
+import { privateEncrypt } from "crypto";
+
 interface IStack {
     set(name: string, value: number): void;
     pop(): Map<string, number> | undefined;
@@ -37,11 +39,17 @@ export class mapStack implements IStack {
         this.storage[this.size() - 1] = input;
     }
 
-    getScopeNumber(input: Map<string, number>): number {
+    getScopeNumber(input: string): number {
         //Takes a blockAnalysis in our case and search the stack array for and return the index to which scope number this is
-        return this.storage.findIndex((scopes) => {
-            return scopes === input;
-        });
+        for (let i = this.size() - 1; i >= 0; i--) {
+            console.log(i);
+
+            if (this.storage[i].has(input)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     search(name: string): boolean {

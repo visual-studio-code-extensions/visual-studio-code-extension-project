@@ -143,7 +143,6 @@ function processBlock(
         node.statements.forEach((child: ts.Statement) =>
             processBlock(stack, child, blockAnalysis, map)
         );
-        stack.pop();
     } else if (ts.isVariableStatement(node)) {
         let list = node.declarationList.declarations[0];
         //In case its = identifier
@@ -176,7 +175,7 @@ function processBlock(
             let variable = node.expression.right;
             blockAnalysis[blockAnalysis.length - 1].referencedVariables.push({
                 name: variable.getText(),
-                block: stack.getScopeNumber(map),
+                block: stack.getScopeNumber(variable.getText()),
             });
         }
     }
