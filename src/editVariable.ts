@@ -20,7 +20,10 @@ export function editVariables(
         );
         //variable not found in the array
         if (elementIndex === -1) {
-            throw new Error("Variable not defined");
+            throw new Error(
+                "Variable not defined, variable name: " +
+                    nodeExpression.left.getText()
+            );
         }
 
         if (detectedVariableStatements[elementIndex].variableType === "const") {

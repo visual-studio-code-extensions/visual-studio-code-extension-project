@@ -2,7 +2,7 @@ import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
-import { mapStack } from "./mapStack";
+import { MapStack } from "./mapStack";
 import { CodeAnalysis } from "./CodeAnalysis";
 import { processExpression } from "./coreAnalyzer";
 import { editVariables } from "./editVariable";
@@ -34,8 +34,8 @@ export function analyzeCode(code: string): CodeAnalysis {
 
     //Create array that will hold the variables that we want to work with.
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
-    let blockAnalysis: BlockAnalysis[] = [];
-    let stack = new mapStack();
+    const blockAnalysis: BlockAnalysis[] = [];
+    const stack = new MapStack();
     const emptyMap = new Map<string, number>();
 
     //Collect text(or other information) from every node and add it to the array
@@ -81,15 +81,15 @@ export function analyzeCode(code: string): CodeAnalysis {
                     identifierLocation,
                 });
             });
-            // } else if (ts.isExpressionStatement(node)) {
-            //     const updatedVariablesArray = editVariables(
-            //         node,
-            //         sourceFile as ts.SourceFile,
-            //         detectedVariableStatements
-            //     );
-            //     if (updatedVariablesArray !== undefined) {
-            //         detectedVariableStatements = updatedVariablesArray;
-            //     }
+        } else if (ts.isExpressionStatement(node)) {
+            const updatedVariablesArray = editVariables(
+                node,
+                sourceFile as ts.SourceFile,
+                detectedVariableStatements
+            );
+            if (updatedVariablesArray !== undefined) {
+                detectedVariableStatements = updatedVariablesArray;
+            }
         } else if (ts.isBlock(node)) {
             //Create an empty array to recurse with on block number 1
 
@@ -117,11 +117,11 @@ export function analyzeCode(code: string): CodeAnalysis {
 }
 
 function processBlock(
-    stack: mapStack,
+    stack: MapStack,
     node: ts.Statement,
     blockAnalysis: BlockAnalysis[],
     map: Map<string, number>
-): mapStack {
+): MapStack {
     if (ts.isBlock(node)) {
         //recursively make empty arrays and add them to the stack if theres another scope
         // let blockAnalysis: BlockAnalysis = {
@@ -144,7 +144,7 @@ function processBlock(
             processBlock(stack, child, blockAnalysis, map)
         );
     } else if (ts.isVariableStatement(node)) {
-        let list = node.declarationList.declarations[0];
+        const list = node.declarationList.declarations[0];
         //In case its = identifier
         if (list.initializer !== undefined) {
             stack.set(list.name.getText(), 0);
@@ -163,7 +163,7 @@ function processBlock(
         ts.isExpressionStatement(node) &&
         ts.isBinaryExpression(node.expression)
     ) {
-        let identifier = node.expression.left;
+        const identifier = node.expression.left;
 
         if (ts.isIdentifier(node.expression.right)) {
             stack.set(identifier.getText(), 0);
@@ -172,7 +172,7 @@ function processBlock(
                 shadows: stack.search(node.expression.right.getText()),
             });
 
-            let variable = node.expression.right;
+            const variable = node.expression.right;
             blockAnalysis[blockAnalysis.length - 1].referencedVariables.push({
                 name: variable.getText(),
                 block: stack.getScopeNumber(variable.getText()),
