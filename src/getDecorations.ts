@@ -17,7 +17,7 @@ export function getDecorations(text: string): vscode.DecorationOptions[] {
 
         const value = {
             range,
-            hoverMessage: `Number ** ${statement.name} ${statement.value} **`,
+            hoverMessage: `${statement.name} (number) = ${statement.value}`,
         };
 
         return value;

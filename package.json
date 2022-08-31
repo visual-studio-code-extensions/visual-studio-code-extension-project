@@ -1,9 +1,10 @@
 {
-    "name": "typescript-parser",
-    "displayName": "Typescript Parser",
+    "name": "typescript-static-analysis",
+    "displayName": "Typescript Static Analysis",
     "description": "Typescript extension that shows value of variables through static analysis, for example defining var x = 5 + 6 will show 11 when you hover over the variable name. Currently support : boolean, numbers ",
-    "version": "0.1.7",
+    "version": "0.0.0",
     "license": "unlicense",
+    "private":true,
     "engines": {
         "vscode": "^1.32.0"
     },
@@ -29,25 +30,34 @@
         "Other"
     ],
     "activationEvents": [
-        "*"
+        "onLanguage:typescript",
+        "onCommand:typescriptStaticAnalysis.run"
     ],
-    "main": "./out/extension.js",
+    "main": "./dist/web/extension.js",
     "contributes": {
         "colors": [
             {
-                "id": "myextension.largeNumberBackground",
-                "description": "Background decoration color for large numbers",
+                "id": "typescriptStaticAnalysis.variableBackground",
+                "description": "Background color for variables",
                 "defaults": {
                     "dark": "#00ff005e",
                     "light": "#dc18ee55",
                     "highContrast": "#FF000055"
                 }
             }
+        ],
+        "commands": [
+            {
+                "command": "typescriptStaticAnalysis.run",
+                "title": "Run TypeScript Static Analysis"
+            }
         ]
     },
     "scripts": {
         "prepack": "npm run build && npm run doc && npm run test",
+        "vscode:prepublish": "npm run clean && npm run package-web",
         "build": "npm run style && npm run lint && npm run clean && npm run compile",
+        "watch": "./node_modules/.bin/tsc -watch --project ./tsconfig.json",
         "doc": "npm run doc-extract && npm run doc-document",
         "test": "./node_modules/.bin/jest --no-cache --config ./config/jest.config.js",
         "test-coverage": "./node_modules/.bin/jest --no-cache --config ./config/jest.config.js --coverage",
@@ -55,8 +65,12 @@
         "style-check": "npm run prettier-check",
         "lint": "npm run eslint",
         "lint-fix": "npm run eslint-fix",
-        "clean":"node ./scripts/clean.js dist && node ./scripts/clean.js temp",
-        "compile": "./node_modules/.bin/tsc --project ./tsconfig.json",
+        "clean": "node ./scripts/clean.js dist && node ./scripts/clean.js temp",
+        "compile": "npm run compile-web",
+        "compile-web": "webpack --config ./build/web-extension.webpack.config.js",
+        "watch-web": "webpack --watch --config ./build/web-extension.webpack.config.js",
+        "package-web": "webpack --mode production --devtool hidden-source-map --config ./build/web-extension.webpack.config.js",
+
         "prettier": "./node_modules/.bin/prettier --config ./config/prettier.json --write \"@(src|test|scripts)/**/*.@(ts|js|md|html|css|json)\"",
         "prettier-check": "./node_modules/.bin/prettier --config ./config/prettier.json --check \"@(src|test)/**/*.@(ts|js|md|html|css|json)\"",
         "eslint": "./node_modules/.bin/eslint --config ./config/eslint.json --no-eslintrc \"@(src|test|scripts)/**/*.@(ts|js)\"",
@@ -64,17 +78,18 @@
         "api-extractor": "./node_modules/.bin/api-extractor",
         "doc-extract": "./node_modules/.bin/api-extractor run --local --verbose",
         "doc-document": "./node_modules/.bin/api-documenter markdown --input-folder ./temp --output-folder ./doc",
-
         "check": "./node_modules/.bin/ts-node scripts/check.ts",
         "check-install": "./node_modules/.bin/ts-node scripts/check-install.ts",
         "check-environment": "./node_modules/.bin/ts-node scripts/check-environment.ts",
-        "start": "./node_modules/.bin/ts-node test/main.ts"
+        "start": "./node_modules/.bin/ts-node test/main.ts",
+        "vsix": "./node_modules/.bin/vsce package --out ./extension.vsix",
+        "vsce": "./node_modules/.bin/vsce"
     },
     "dependencies": {
-        "typescript": "^4.7.2",
-        "vsce": "^2.10.0"
+        "typescript": "4.8.2"
     },
     "devDependencies": {
+        "vsce": "^2.7.0",
         "@types/jest": "^28.1.1",
         "@types/node": "^16.11.7",
         "@types/vscode": "^1.32.0",
@@ -84,6 +99,11 @@
         "jest": "^28.1.3",
         "prettier": "^2.7.1",
         "ts-jest": "^28.0.5",
-        "ts-node": "^10.9.1"
+        "ts-node": "^10.9.1",
+        "webpack": "^5.7.4",
+        "webpack-cli": "^4.10.0",
+        "ts-loader": "^9.2.2",
+        "@types/webpack-env": "^1.18.0",
+        "process": "^0.11.10"
     }
 }
