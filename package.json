@@ -33,7 +33,7 @@
         "onLanguage:typescript",
         "onCommand:typescriptStaticAnalysis.run"
     ],
-    "main": "./out/extension.js",
+    "main": "./dist/web/extension.js",
     "contributes": {
         "colors": [
             {
@@ -82,14 +82,14 @@
         "check-install": "./node_modules/.bin/ts-node scripts/check-install.ts",
         "check-environment": "./node_modules/.bin/ts-node scripts/check-environment.ts",
         "start": "./node_modules/.bin/ts-node test/main.ts",
-        "vsix": "./node_modules/.bin/vsce package --out ./out/extension.vsix",
+        "vsix": "./node_modules/.bin/vsce package --out ./extension.vsix",
         "vsce": "./node_modules/.bin/vsce"
     },
     "dependencies": {
-        "typescript": "4.5.5"
+        "typescript": "4.8.2"
     },
     "devDependencies": {
-        "vsce": "^2.11.0",
+        "vsce": "^2.7.0",
         "@types/jest": "^28.1.1",
         "@types/node": "^16.11.7",
         "@types/vscode": "^1.32.0",
@@ -100,10 +100,10 @@
         "prettier": "^2.7.1",
         "ts-jest": "^28.0.5",
         "ts-node": "^10.9.1",
-        "webpack": "^5.38.1",
-        "webpack-cli": "^4.7.0",
+        "webpack": "^5.7.4",
+        "webpack-cli": "^4.10.0",
         "ts-loader": "^9.2.2",
-        "@types/webpack-env": "^1.16.0",
+        "@types/webpack-env": "^1.18.0",
         "process": "^0.11.10"
     }
 }
