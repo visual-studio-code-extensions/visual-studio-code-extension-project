@@ -1,14 +1,19 @@
-import exp from "constants";
 import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
+import { MapStack } from "./mapStack";
+import { CodeAnalysis } from "./CodeAnalysis";
+import { processExpression } from "./coreAnalyzer";
+import { editVariables } from "./editVariable";
+import { BlockAnalysis } from "./BlockAnalysis";
 
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
  */
-export function analyzeCode(code: string): VariableStatementAnalysis[] {
+export function analyzeCode(code: string): CodeAnalysis {
+    //TODO: What would the return type be?
     const sourceFileName = "code.ts";
 
     const program = createProgramFromFiles(
@@ -29,293 +34,153 @@ export function analyzeCode(code: string): VariableStatementAnalysis[] {
 
     //Create array that will hold the variables that we want to work with.
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
+    const blockAnalysis: BlockAnalysis[] = [];
+    const stack = new MapStack();
+    const emptyMap = new Map<string, number>();
 
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
         //check if node is a variable declaration
-        if (ts.isVariableDeclarationList(node)) {
-            const variableType = node.getChildAt(0);
+        if (ts.isVariableStatement(node)) {
+            const variableType = node.declarationList.getChildAt(0);
             //calculate the value of that variable and add it to the variables array
-            //TODO: edge case: defining two variables same time
-            const expression = node.declarations[0];
-            const variableValue = processExpression(
-                //get the expression of the variable declaration
-                expression.initializer,
-                detectedVariableStatements
-            );
+            const declarationsList = node.declarationList.declarations;
+            declarationsList.forEach(function (expression) {
+                const variableValue = processExpression(
+                    //get the expression of the variable declaration
+                    expression.initializer,
+                    detectedVariableStatements
+                );
 
-            if (variableValue === undefined) {
-                throw Error("Value is undefined");
-            }
+                if (variableValue === undefined) {
+                    throw Error("Value is undefined");
+                }
 
-            if (sourceFile === undefined) {
-                throw new Error("Source File is undefined");
-            }
+                //No need to check if source file is undefined, because we already did that earlier in the program.
+                //Get position information
+                const expressionLocation = getNodePosition(
+                    sourceFile as ts.SourceFile,
+                    node
+                );
 
-            const expressionLocation = getNodePosition(sourceFile, node);
+                const identifierLocation = getNodePosition(
+                    sourceFile as ts.SourceFile,
+                    expression.name
+                );
 
-            const identifierLocation = getNodePosition(
-                sourceFile,
-                expression.name
-            );
+                //Create new object that shows information of the variable and push it to the array
+                detectedVariableStatements.push({
+                    name: expression.name.getText(),
 
-            detectedVariableStatements.push({
-                name: expression.name.getText(),
+                    value: variableValue,
+                    //TODO: add you cant change constants and so
+                    variableType: variableType.getText(),
+                    text: node.getText(),
 
-                value: variableValue,
-                //TODO: add you cant change constants and so
-                variableType: variableType.getText(),
-                text: node.getText(),
-
-                expressionLocation,
-                identifierLocation,
+                    expressionLocation,
+                    identifierLocation,
+                });
             });
-            //TODO: should check if its a const or a var
         } else if (ts.isExpressionStatement(node)) {
-            const nodeExpression = node.expression;
             const updatedVariablesArray = editVariables(
-                nodeExpression,
+                node,
                 sourceFile as ts.SourceFile,
                 detectedVariableStatements
             );
             if (updatedVariablesArray !== undefined) {
                 detectedVariableStatements = updatedVariablesArray;
             }
+        } else if (ts.isBlock(node)) {
+            //Create an empty array to recurse with on block number 1
+
+            processBlock(stack, node, blockAnalysis, emptyMap);
         }
+        //  else if (ts.isIfStatement(node)) {
+        //     if (
+        //         processExpression(node.expression, detectedVariableStatements)
+        //     ) {
+        //         visitVariableStatement(node.thenStatement);
+        //     } else if (node.elseStatement !== undefined) {
+        //         visitVariableStatement(node.elseStatement);
+        //     }
+        // }
     }
     // iterate through source file searching for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
 
-    return detectedVariableStatements;
+    // TODO: actually do block analysis
+    return {
+        variableStatementAnalysis: detectedVariableStatements,
+        blockAnalysis: blockAnalysis,
+        //Block is only concerned about declaration of variables in blocks
+    };
 }
 
-const operations = new Map<ts.SyntaxKind, (a: number, b: number) => number>([
-    [ts.SyntaxKind.PlusToken, (a: number, b: number) => a + b],
-    [ts.SyntaxKind.MinusToken, (a: number, b: number) => a - b],
-    [ts.SyntaxKind.AsteriskToken, (a: number, b: number) => a * b],
-    [ts.SyntaxKind.AsteriskAsteriskToken, (a: number, b: number) => a ** b],
-    [ts.SyntaxKind.SlashToken, (a: number, b: number) => a / b],
-    [ts.SyntaxKind.PercentToken, (a: number, b: number) => a % b],
-]);
+function processBlock(
+    stack: MapStack,
+    node: ts.Statement,
+    blockAnalysis: BlockAnalysis[],
+    map: Map<string, number>
+): MapStack {
+    if (ts.isBlock(node)) {
+        //recursively make empty arrays and add them to the stack if theres another scope
+        // let blockAnalysis: BlockAnalysis = {
+        //     localVariables: [],
+        //     referencedVariables: [],
+        // };
 
-//Not used yet, keep commented for future uses and boolean expression processing
-// const boolOperations = new Map<ts.SyntaxKind, (a: number, b:number) => boolean>([
-//     [ts.SyntaxKind.EqualsEqualsEqualsToken, (a: number, b: number) => a === b],
-//     [ts.SyntaxKind.ExclamationEqualsEqualsToken, (a: number, b: number) => a !== b],
-// ]);
-
-const postFixUnaryExpression = new Map<ts.SyntaxKind, (a: number) => number>([
-    [ts.SyntaxKind.PlusPlusToken, (a: number) => a + 1],
-    [ts.SyntaxKind.MinusMinusToken, (a: number) => a - 1],
-]);
-
-const preFixUnaryExpression = new Map<ts.SyntaxKind, (a: number) => number>([
-    [ts.SyntaxKind.PlusPlusToken, (a: number) => a + 1],
-    [ts.SyntaxKind.MinusMinusToken, (a: number) => a - 1],
-    [ts.SyntaxKind.PlusToken, (a: number) => +a],
-    [ts.SyntaxKind.MinusToken, (a: number) => -a],
-]);
-
-function editVariables(
-    nodeExpression: ts.Expression,
-    sourceFile: ts.SourceFile,
-    detectedVariableStatements: VariableStatementAnalysis[]
-): VariableStatementAnalysis[] | undefined {
-    //calculate binary expression and update its value
-    if (ts.isBinaryExpression(nodeExpression)) {
-        const elementIndex = detectedVariableStatements.findIndex(
-            (variables) => {
-                return variables.name === nodeExpression.left.getText();
-            }
+        // node.statements.forEach((child: ts.Statement) =>
+        //     processBlock(stack, child, blockAnalysis)
+        // );
+        // stack.push(blockAnalysis);
+        //stack.push(new Map<string, number>());
+        const empty: BlockAnalysis = {
+            referencedVariables: [],
+            localVariables: [],
+        };
+        stack.push(map);
+        blockAnalysis.push(empty);
+        node.statements.forEach((child: ts.Statement) =>
+            processBlock(stack, child, blockAnalysis, map)
         );
-        //variable not found in the array
-        if (elementIndex === -1) {
-            throw new Error("Variable not defined");
+    } else if (ts.isVariableStatement(node)) {
+        const list = node.declarationList.declarations[0];
+        //In case its = identifier
+        if (list.initializer !== undefined) {
+            stack.set(list.name.getText(), 0);
+            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+                name: list.name.getText(),
+                shadows: stack.search(list.initializer.getText()),
+            });
+        } else {
+            stack.set(list.name.getText(), 0);
+            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+                name: list.name.getText(),
+                shadows: stack.search(list.name.getText()),
+            });
         }
-
-        //Get the new variable value
-        const newVariableValue = processExpression(
-            nodeExpression.right,
-            detectedVariableStatements
-        );
-
-        const expressionLocation = getNodePosition(sourceFile, nodeExpression);
-
-        const identifierLocation = getNodePosition(
-            sourceFile,
-            nodeExpression.left
-        );
-
-        //Check if undefined and throw an error if so
-        if (newVariableValue === undefined) {
-            throw Error("Value is undefined");
-        }
-
-        //since right would always be binary expression we want to process that, and update the variable value
-
-        detectedVariableStatements.push({
-            name: detectedVariableStatements[elementIndex].name,
-            value: newVariableValue,
-            //TODO: add you cant change constants and so
-            variableType: detectedVariableStatements[elementIndex].variableType,
-            text: nodeExpression.getText(),
-            expressionLocation,
-            identifierLocation,
-        });
-
-        return detectedVariableStatements;
     } else if (
-        //else if we encounter a i++ or --i case
-        ts.isPostfixUnaryExpression(nodeExpression) ||
-        ts.isPrefixUnaryExpression(nodeExpression)
+        ts.isExpressionStatement(node) &&
+        ts.isBinaryExpression(node.expression)
     ) {
-        if (ts.isIdentifier(nodeExpression.operand)) {
-            const elementIndex = detectedVariableStatements.findIndex(
-                (variables) => {
-                    return variables.name === nodeExpression.operand.getText();
-                }
-            );
+        const identifier = node.expression.left;
 
-            //variable not found
-            if (elementIndex === -1) {
-                throw new Error("Variable not defined");
-            }
+        if (ts.isIdentifier(node.expression.right)) {
+            stack.set(identifier.getText(), 0);
+            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+                name: identifier.getText(),
+                shadows: stack.search(node.expression.right.getText()),
+            });
 
-            const operation = postFixUnaryExpression.get(
-                nodeExpression.operator
-            );
-
-            const expressionLocation = getNodePosition(
-                sourceFile,
-                nodeExpression
-            );
-
-            const identifierLocation = getNodePosition(
-                sourceFile,
-                nodeExpression.operand
-            );
-
-            if (operation !== undefined) {
-                detectedVariableStatements.push({
-                    name: detectedVariableStatements[elementIndex].name,
-
-                    value: operation(
-                        detectedVariableStatements[elementIndex].value
-                    ),
-                    //TODO: add you cant change constants and so
-                    variableType:
-                        detectedVariableStatements[elementIndex].variableType,
-                    text: nodeExpression.getText(),
-
-                    expressionLocation,
-                    identifierLocation,
-                });
-                return detectedVariableStatements;
-            } else {
-                throw new Error("Operation is Undefined");
-            }
-        } else {
-            //Case where --5/5-- or ++7/7++ which can't be calculated
-            throw new Error(
-                "The operand of an increment or decrement operator must be a variable or a property"
-            );
+            const variable = node.expression.right;
+            blockAnalysis[blockAnalysis.length - 1].referencedVariables.push({
+                name: variable.getText(),
+                block: stack.getScopeNumber(variable.getText()),
+            });
         }
     }
-    return undefined;
-}
 
-function processExpression(
-    node:
-        | ts.Expression
-        | ts.NumericLiteral
-        | ts.Identifier
-        | ts.ParenthesizedExpression
-        | ts.PrefixUnaryExpression
-        | undefined,
-    detectedVariableStatements: VariableStatementAnalysis[]
-): number | undefined {
-    if (node === undefined) {
-        throw new Error("Expression is undefined");
-    }
-
-    if (ts.isBinaryExpression(node)) {
-        const left = processExpression(node.left, detectedVariableStatements);
-        const right = processExpression(node.right, detectedVariableStatements);
-        const operation = operations.get(node.operatorToken.kind);
-
-        if (
-            operation !== undefined &&
-            left !== undefined &&
-            right !== undefined
-        ) {
-            return operation(left, right);
-        }
-        return undefined;
-    } else if (ts.isNumericLiteral(node)) {
-        //in case variables were defined just with one numeric literal for example: const x = 2;
-        return parseFloat(node.getText());
-    } else if (ts.isIdentifier(node)) {
-        const identifierValue = detectedVariableStatements.find((variables) => {
-            return variables.name === node.getText();
-        });
-        if (identifierValue === undefined) {
-            throw new Error(
-                "Identifier" +
-                    node.getText +
-                    " cannot be found or undefined, please define a variable before using it"
-            );
-        }
-
-        return identifierValue.value;
-    } else if (ts.isParenthesizedExpression(node)) {
-        //in case we encounter a (...) situation, for example const a = 2 + (2 + 4)
-        return processExpression(node.expression, detectedVariableStatements);
-    } else if (ts.isPrefixUnaryExpression(node)) {
-        if (ts.isIdentifier(node.operand)) {
-            //Case where we are doing ++i or --i
-            const elementIndex = detectedVariableStatements.findIndex(
-                (variables) => {
-                    return variables.name === node.operand.getText();
-                }
-            );
-            //variable not found
-            if (elementIndex === -1) {
-                throw new Error(
-                    "Variable: " + node.operand.getText + " not defined"
-                );
-            }
-            const operation = preFixUnaryExpression.get(node.operator);
-            //Apply the correct operation
-            if (operation !== undefined) {
-                return operation(
-                    detectedVariableStatements[elementIndex].value
-                );
-            }
-            return undefined;
-        } else {
-            if (
-                node.operator === ts.SyntaxKind.PlusPlusToken ||
-                node.operator === ts.SyntaxKind.MinusMinusToken
-            ) {
-                //Can't do --4 or ++3 when defining a variable
-                throw new Error(
-                    "The operand of an increment or decrement operator must be a variable or a property"
-                );
-            }
-            const value = processExpression(
-                node.operand,
-                detectedVariableStatements
-            );
-            const operation = preFixUnaryExpression.get(node.operator);
-            if (value !== undefined && operation !== undefined) {
-                return operation(value);
-            } else {
-                return undefined;
-            }
-        }
-    } else {
-        throw new Error("Cannot process this expression: " + node.getText());
-    }
+    return stack;
 }
 
 /**

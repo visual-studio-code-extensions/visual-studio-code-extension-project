@@ -2,9 +2,9 @@ import { analyzeCode } from "./analyzeCode";
 import * as vscode from "vscode";
 
 export function getDecorations(text: string): vscode.DecorationOptions[] {
-    const results = analyzeCode(text);
+    const { variableStatementAnalysis } = analyzeCode(text);
 
-    const decorations = results.map((statement) => {
+    const decorations = variableStatementAnalysis.map((statement) => {
         const { startLine, startCharacter, endCharacter, endLine } =
             statement.identifierLocation;
 
@@ -17,11 +17,13 @@ export function getDecorations(text: string): vscode.DecorationOptions[] {
 
         const value = {
             range,
-            hoverMessage: `Number ** ${statement.name} ${statement.value} **`,
+            hoverMessage: `${statement.name} (number) = ${statement.value}`,
         };
 
         return value;
     });
+
+    // TODO: show for blocks
 
     return decorations;
 }
