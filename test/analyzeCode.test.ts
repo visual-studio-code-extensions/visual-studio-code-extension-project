@@ -175,8 +175,7 @@ test("simple assignment", () => {
 
 //Work in progress
 test("multi assignment", () => {
-    const code = 
-    `{
+    const code = `{
         let y = 5;
         {
         let x = 1;

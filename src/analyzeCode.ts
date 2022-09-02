@@ -81,15 +81,15 @@ export function analyzeCode(code: string): CodeAnalysis {
                     identifierLocation,
                 });
             });
-        // } else if (ts.isExpressionStatement(node)) {
-        //     const updatedVariablesArray = editVariables(
-        //         node,
-        //         sourceFile as ts.SourceFile,
-        //         detectedVariableStatements
-        //     );
-        //     if (updatedVariablesArray !== undefined) {
-        //         detectedVariableStatements = updatedVariablesArray;
-        //     }
+        } else if (ts.isExpressionStatement(node)) {
+            const updatedVariablesArray = editVariables(
+                node,
+                sourceFile as ts.SourceFile,
+                detectedVariableStatements
+            );
+            if (updatedVariablesArray !== undefined) {
+                detectedVariableStatements = updatedVariablesArray;
+            }
         } else if (ts.isBlock(node)) {
             //Create an empty array to recurse with on block number 1
 
@@ -110,7 +110,8 @@ export function analyzeCode(code: string): CodeAnalysis {
 function processBlock(
     stack: MapStack,
     node: ts.Statement,
-    blockAnalysis: BlockAnalysis[]): MapStack {
+    blockAnalysis: BlockAnalysis[]
+): MapStack {
     if (ts.isBlock(node)) {
         //recursively make empty arrays and add them to the stack if theres another scope
         const empty: BlockAnalysis = {
@@ -161,12 +162,10 @@ function processBlock(
         }
     }
     //TODO: Cases where if statements aren't made with blocks
-    else if(ts.isIfStatement(node))
-    {
+    else if (ts.isIfStatement(node)) {
         processBlock(stack, node.thenStatement, blockAnalysis);
 
-        if(node.elseStatement !== undefined)
-        {
+        if (node.elseStatement !== undefined) {
             processBlock(stack, node.elseStatement, blockAnalysis);
         }
     }
