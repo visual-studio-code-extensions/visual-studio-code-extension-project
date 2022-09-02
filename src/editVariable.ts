@@ -53,7 +53,6 @@ export function editVariables(
         detectedVariableStatements.push({
             name: detectedVariableStatements[elementIndex].name,
             value: newVariableValue,
-            //TODO: add you cant change constants and so
             variableType: detectedVariableStatements[elementIndex].variableType,
             text: node.getText(),
             expressionLocation,

@@ -81,29 +81,20 @@ export function analyzeCode(code: string): CodeAnalysis {
                     identifierLocation,
                 });
             });
-        } else if (ts.isExpressionStatement(node)) {
-            const updatedVariablesArray = editVariables(
-                node,
-                sourceFile as ts.SourceFile,
-                detectedVariableStatements
-            );
-            if (updatedVariablesArray !== undefined) {
-                detectedVariableStatements = updatedVariablesArray;
-            }
+        // } else if (ts.isExpressionStatement(node)) {
+        //     const updatedVariablesArray = editVariables(
+        //         node,
+        //         sourceFile as ts.SourceFile,
+        //         detectedVariableStatements
+        //     );
+        //     if (updatedVariablesArray !== undefined) {
+        //         detectedVariableStatements = updatedVariablesArray;
+        //     }
         } else if (ts.isBlock(node)) {
             //Create an empty array to recurse with on block number 1
 
-            processBlock(stack, node, blockAnalysis, emptyMap);
+            processBlock(stack, node, blockAnalysis);
         }
-        //  else if (ts.isIfStatement(node)) {
-        //     if (
-        //         processExpression(node.expression, detectedVariableStatements)
-        //     ) {
-        //         visitVariableStatement(node.thenStatement);
-        //     } else if (node.elseStatement !== undefined) {
-        //         visitVariableStatement(node.elseStatement);
-        //     }
-        // }
     }
     // iterate through source file searching for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
@@ -119,30 +110,20 @@ export function analyzeCode(code: string): CodeAnalysis {
 function processBlock(
     stack: MapStack,
     node: ts.Statement,
-    blockAnalysis: BlockAnalysis[],
-    map: Map<string, number>
-): MapStack {
+    blockAnalysis: BlockAnalysis[]): MapStack {
     if (ts.isBlock(node)) {
         //recursively make empty arrays and add them to the stack if theres another scope
-        // let blockAnalysis: BlockAnalysis = {
-        //     localVariables: [],
-        //     referencedVariables: [],
-        // };
-
-        // node.statements.forEach((child: ts.Statement) =>
-        //     processBlock(stack, child, blockAnalysis)
-        // );
-        // stack.push(blockAnalysis);
-        //stack.push(new Map<string, number>());
         const empty: BlockAnalysis = {
             referencedVariables: [],
             localVariables: [],
         };
-        stack.push(map);
+
+        stack.addNew();
         blockAnalysis.push(empty);
         node.statements.forEach((child: ts.Statement) =>
-            processBlock(stack, child, blockAnalysis, map)
+            processBlock(stack, child, blockAnalysis)
         );
+        stack.pop();
     } else if (ts.isVariableStatement(node)) {
         const list = node.declarationList.declarations[0];
         //In case its = identifier
@@ -177,6 +158,16 @@ function processBlock(
                 name: variable.getText(),
                 block: stack.getScopeNumber(variable.getText()),
             });
+        }
+    }
+    //TODO: Cases where if statements aren't made with blocks
+    else if(ts.isIfStatement(node))
+    {
+        processBlock(stack, node.thenStatement, blockAnalysis);
+
+        if(node.elseStatement !== undefined)
+        {
+            processBlock(stack, node.elseStatement, blockAnalysis);
         }
     }
 

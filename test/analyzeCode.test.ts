@@ -174,40 +174,41 @@ test("simple assignment", () => {
 });
 
 //Work in progress
-// test("multi assignment", () => {
-//     const code = `{
-//         let y = 5;
-//         {
-//         let x = 1;
-//             if (true) {
-//                 a = x;
-//                 b = y;
-//             }
-//         }
-//     }`;
+test("multi assignment", () => {
+    const code = 
+    `{
+        let y = 5;
+        {
+        let x = 1;
+            if (true) {
+                a = x;
+                b = y;
+            }
+        }
+    }`;
 
-//     const expected = [
-//         {
-//             name: "x",
-//             text: "let x = 1;",
-//             variableType: "let",
-//             value: 1,
-//         },
-//         // {
-//         //     name: "x",
-//         //     text: "let x = 2;",
-//         //     variableType: "let",
-//         //     value: 2,
-//         // },
-//         // {
-//         //     name: "a",
-//         //     text: "let a = x;",
-//         //     variableType: "let",
-//         //     value: 2,
-//         // },
-//     ];
+    const expected = [
+        {
+            name: "x",
+            text: "let x = 1;",
+            variableType: "let",
+            value: 1,
+        },
+        // {
+        //     name: "x",
+        //     text: "let x = 2;",
+        //     variableType: "let",
+        //     value: 2,
+        // },
+        // {
+        //     name: "a",
+        //     text: "let a = x;",
+        //     variableType: "let",
+        //     value: 2,
+        // },
+    ];
 
-//     const actual = analyzeCode(code).blockAnalysis;
-//     expect(actual).toStrictEqual(expected);
-//     //expectSubset(actual, expected);
-// });
+    const actual = analyzeCode(code).blockAnalysis;
+    expect(actual).toStrictEqual(expected);
+    //expectSubset(actual, expected);
+});

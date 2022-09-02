@@ -59,4 +59,8 @@ export class MapStack implements InterfaceStack {
 
         return returnIndex;
     }
+
+    addNew(): void{
+        this.storage.push(new Map<string, number>());
+    }
 }
