@@ -178,10 +178,79 @@ test("multi assignment", () => {
     const code = `{
         let y = 5;
         {
-        let x = 1;
+        let shadow = 1;
             if (true) {
-                a = x;
-                b = y;
+                shadow = y;
+                a = shadow;
+            }
+        }
+    }`;
+
+    const expected = [
+        {
+            localVariables: [
+                {
+                    name: "y",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [],
+        },
+        {
+            localVariables: [
+                {
+                    name: "shadow",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [],
+        },
+        {
+            localVariables: [
+                {
+                    name: "shadow",
+                    shadows: true,
+                },
+                {
+                    name: "a",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [
+                {
+                    block: 0,
+                    name: "y",
+                },
+                {
+                    block: 1,
+                    name: "shadow",
+                },
+            ],
+        },
+    ];
+
+    const actual = analyzeCode(code).blockAnalysis;
+    expect(actual).toStrictEqual(expected);
+    //expectSubset(actual, expected);
+});
+
+test("nested if statements", () => {
+    const code = `
+    {
+        const a = 1;
+        const b = 2;
+        const c = 3
+        if(true){
+            d = 2;
+            e = a;
+        } else if(false) {
+            f = a + c + b;
+            if(true) {
+                g = a + a;
+            }
+        } else {
+            if(true) {
+                h = a * b;
             }
         }
     }`;
@@ -189,25 +258,10 @@ test("multi assignment", () => {
     const expected = [
         {
             name: "x",
-            text: "let x = 1;",
-            variableType: "let",
-            value: 1,
+
         },
-        // {
-        //     name: "x",
-        //     text: "let x = 2;",
-        //     variableType: "let",
-        //     value: 2,
-        // },
-        // {
-        //     name: "a",
-        //     text: "let a = x;",
-        //     variableType: "let",
-        //     value: 2,
-        // },
     ];
 
-    const actual = analyzeCode(code).blockAnalysis;
-    expect(actual).toStrictEqual(expected);
-    //expectSubset(actual, expected);
+    // const actual = analyzeCode(code).blockAnalysis;
+    // expect(actual).toStrictEqual(expected);
 });

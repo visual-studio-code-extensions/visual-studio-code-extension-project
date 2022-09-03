@@ -39,7 +39,8 @@ export class MapStack implements InterfaceStack {
 
     getScopeNumber(input: string): number {
         //Takes a blockAnalysis in our case and search the stack array for and return the index to which scope number this is
-        for (let i = this.size() - 1; i >= 0; i--) {
+        //-2 because we dont want to start in the same scope we are defining the variable
+        for (let i = this.size() - 2; i >= 0; i--) {
             if (this.storage[i].has(input)) {
                 return i;
             }
@@ -49,15 +50,13 @@ export class MapStack implements InterfaceStack {
     }
 
     search(name: string): boolean {
-        let returnIndex = false;
-        this.storage.forEach((element) => {
-            const index = element.has(name);
-            if (index === true) {
-                returnIndex = index;
+        for (let i = this.size() - 2; i >= 0; i--) {
+            if (this.storage[i].has(name)) {
+                return true;
             }
-        });
+        }
 
-        return returnIndex;
+        return false;
     }
 
     addNew(): void {

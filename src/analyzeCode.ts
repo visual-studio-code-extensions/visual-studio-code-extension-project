@@ -36,7 +36,6 @@ export function analyzeCode(code: string): CodeAnalysis {
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
     const blockAnalysis: BlockAnalysis[] = [];
     const stack = new MapStack();
-    const emptyMap = new Map<string, number>();
 
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
@@ -96,12 +95,17 @@ export function analyzeCode(code: string): CodeAnalysis {
                 }
             } else if (
                 ts.isBlock(node) &&
-                node.parent.kind !== ts.SyntaxKind.IfStatement
+                (node.parent.kind !== ts.SyntaxKind.IfStatement ||
+                    node.parent.kind === undefined)
             ) {
                 //Create an empty array to recurse with on block number 1
 
                 processBlock(stack, node, blockAnalysis);
-            } else if (ts.isIfStatement(node)) {
+            } else if (
+                ts.isIfStatement(node) &&
+                (node.parent.kind !== ts.SyntaxKind.IfStatement ||
+                    node.parent.kind === undefined)
+            ) {
                 processBlock(stack, node.thenStatement, blockAnalysis);
 
                 if (node.elseStatement !== undefined) {
@@ -165,7 +169,7 @@ function processBlock(
             stack.set(identifier.getText(), 0);
             blockAnalysis[blockAnalysis.length - 1].localVariables.push({
                 name: identifier.getText(),
-                shadows: stack.search(node.expression.right.getText()),
+                shadows: stack.search(node.expression.left.getText()),
             });
 
             const variable = node.expression.right;
