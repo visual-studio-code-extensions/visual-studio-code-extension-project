@@ -41,59 +41,73 @@ export function analyzeCode(code: string): CodeAnalysis {
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
         //check if node is a variable declaration
-        if (ts.isVariableStatement(node)) {
-            const variableType = node.declarationList.getChildAt(0);
-            //calculate the value of that variable and add it to the variables array
-            const declarationsList = node.declarationList.declarations;
-            declarationsList.forEach(function (expression) {
-                const variableValue = processExpression(
-                    //get the expression of the variable declaration
-                    expression.initializer,
+        if (
+            node.parent === undefined ||
+            node.parent.kind !== ts.SyntaxKind.Block
+        ) {
+            if (ts.isVariableStatement(node)) {
+                const variableType = node.declarationList.getChildAt(0);
+                //calculate the value of that variable and add it to the variables array
+                const declarationsList = node.declarationList.declarations;
+                declarationsList.forEach(function (expression) {
+                    const variableValue = processExpression(
+                        //get the expression of the variable declaration
+                        expression.initializer,
+                        detectedVariableStatements
+                    );
+
+                    if (variableValue === undefined) {
+                        throw Error("Value is undefined");
+                    }
+
+                    //No need to check if source file is undefined, because we already did that earlier in the program.
+                    //Get position information
+                    const expressionLocation = getNodePosition(
+                        sourceFile as ts.SourceFile,
+                        node
+                    );
+
+                    const identifierLocation = getNodePosition(
+                        sourceFile as ts.SourceFile,
+                        expression.name
+                    );
+
+                    //Create new object that shows information of the variable and push it to the array
+                    detectedVariableStatements.push({
+                        name: expression.name.getText(),
+
+                        value: variableValue,
+                        //TODO: add you cant change constants and so
+                        variableType: variableType.getText(),
+                        text: node.getText(),
+
+                        expressionLocation,
+                        identifierLocation,
+                    });
+                });
+            } else if (ts.isExpressionStatement(node)) {
+                const updatedVariablesArray = editVariables(
+                    node,
+                    sourceFile as ts.SourceFile,
                     detectedVariableStatements
                 );
-
-                if (variableValue === undefined) {
-                    throw Error("Value is undefined");
+                if (updatedVariablesArray !== undefined) {
+                    detectedVariableStatements = updatedVariablesArray;
                 }
+            } else if (
+                ts.isBlock(node) &&
+                node.parent.kind !== ts.SyntaxKind.IfStatement
+            ) {
+                //Create an empty array to recurse with on block number 1
 
-                //No need to check if source file is undefined, because we already did that earlier in the program.
-                //Get position information
-                const expressionLocation = getNodePosition(
-                    sourceFile as ts.SourceFile,
-                    node
-                );
+                processBlock(stack, node, blockAnalysis);
+            } else if (ts.isIfStatement(node)) {
+                processBlock(stack, node.thenStatement, blockAnalysis);
 
-                const identifierLocation = getNodePosition(
-                    sourceFile as ts.SourceFile,
-                    expression.name
-                );
-
-                //Create new object that shows information of the variable and push it to the array
-                detectedVariableStatements.push({
-                    name: expression.name.getText(),
-
-                    value: variableValue,
-                    //TODO: add you cant change constants and so
-                    variableType: variableType.getText(),
-                    text: node.getText(),
-
-                    expressionLocation,
-                    identifierLocation,
-                });
-            });
-        } else if (ts.isExpressionStatement(node)) {
-            const updatedVariablesArray = editVariables(
-                node,
-                sourceFile as ts.SourceFile,
-                detectedVariableStatements
-            );
-            if (updatedVariablesArray !== undefined) {
-                detectedVariableStatements = updatedVariablesArray;
+                if (node.elseStatement !== undefined) {
+                    processBlock(stack, node.elseStatement, blockAnalysis);
+                }
             }
-        } else if (ts.isBlock(node)) {
-            //Create an empty array to recurse with on block number 1
-
-            processBlock(stack, node, blockAnalysis);
         }
     }
     // iterate through source file searching for variable statements
