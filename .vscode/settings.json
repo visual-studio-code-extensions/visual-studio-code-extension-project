@@ -39,5 +39,6 @@
         "linebreak",
         "markdownlint",
         "prettierrc"
-    ]
+    ],
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }
