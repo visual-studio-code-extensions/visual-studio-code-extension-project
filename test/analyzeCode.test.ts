@@ -244,24 +244,101 @@ test("nested if statements", () => {
             d = 2;
             e = a;
         } else if(false) {
-            f = a + c + b;
+            f = a;
             if(true) {
-                g = a + a;
+                g = b;
             }
         } else {
             if(true) {
-                h = a * b;
+                h = c;
             }
         }
     }`;
 
     const expected = [
         {
-            name: "x",
-
+            localVariables: [
+                {
+                    name: "a",
+                    shadows: false,
+                },
+                {
+                    name: "b",
+                    shadows: false,
+                },
+                {
+                    name: "c",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [],
+        },
+        {
+            localVariables: [
+                {
+                    name: "d",
+                    shadows: false,
+                },
+                {
+                    name: "e",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [
+                {
+                    block: 0,
+                    name: "a",
+                },
+            ],
+        },
+        {
+            localVariables: [
+                {
+                    name: "f",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [
+                {
+                    block: 0,
+                    name: "a",
+                },
+            ],
+        },
+        {
+            localVariables: [
+                {
+                    name: "g",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [
+                {
+                    block: 0,
+                    name: "b",
+                },
+            ],
+        },
+        {
+            localVariables: [],
+            referencedVariables: [],
+        },
+        {
+            localVariables: [
+                {
+                    name: "h",
+                    shadows: false,
+                },
+            ],
+            referencedVariables: [
+                {
+                    block: 0,
+                    name: "c",
+                },
+            ],
         },
     ];
 
-    // const actual = analyzeCode(code).blockAnalysis;
-    // expect(actual).toStrictEqual(expected);
+    const actual = analyzeCode(code).blockAnalysis;
+    expect(actual).toStrictEqual(expected);
 });

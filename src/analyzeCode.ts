@@ -138,6 +138,7 @@ function processBlock(
         };
 
         stack.addNew();
+
         blockAnalysis.push(empty);
         node.statements.forEach((child: ts.Statement) =>
             processBlock(stack, child, blockAnalysis)
@@ -176,6 +177,12 @@ function processBlock(
             blockAnalysis[blockAnalysis.length - 1].referencedVariables.push({
                 name: variable.getText(),
                 block: stack.getScopeNumber(variable.getText()),
+            });
+        } else if (ts.isNumericLiteral(node.expression.right)) {
+            stack.set(identifier.getText(), 0);
+            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+                name: identifier.getText(),
+                shadows: stack.search(node.expression.left.getText()),
             });
         }
     }
