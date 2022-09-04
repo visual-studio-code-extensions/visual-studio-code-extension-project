@@ -320,10 +320,6 @@ test("nested if statements", () => {
             ],
         },
         {
-            localVariables: [],
-            referencedVariables: [],
-        },
-        {
             localVariables: [
                 {
                     name: "h",

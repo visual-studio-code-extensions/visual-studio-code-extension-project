@@ -131,15 +131,23 @@ function processBlock(
     blockAnalysis: BlockAnalysis[]
 ): MapStack {
     if (ts.isBlock(node)) {
-        //recursively make empty arrays and add them to the stack if theres another scope
-        const empty: BlockAnalysis = {
-            referencedVariables: [],
-            localVariables: [],
-        };
+        if (
+            !(
+                node.statements.length === 1 &&
+                ts.isIfStatement(node.statements[0])
+            )
+        ) {
+            //recursively make empty arrays and add them to the stack if theres another scope
+            const empty: BlockAnalysis = {
+                referencedVariables: [],
+                localVariables: [],
+            };
 
-        stack.addNew();
+            stack.addNew();
 
-        blockAnalysis.push(empty);
+            blockAnalysis.push(empty);
+        }
+
         node.statements.forEach((child: ts.Statement) =>
             processBlock(stack, child, blockAnalysis)
         );
