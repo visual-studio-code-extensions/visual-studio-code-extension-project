@@ -7,6 +7,7 @@ import {
 } from "./operations";
 import { MapStack } from "./mapStack";
 
+//Check types of expression and choose operation accordingly 
 function applyBinaryOperation(
     opToken: ts.BinaryExpression["operatorToken"],
     left: number | boolean,
@@ -16,14 +17,18 @@ function applyBinaryOperation(
     const numberBooleanOperation = numberBooleanOperations.get(opToken.kind);
     const booleanOperation = booleanOperations.get(opToken.kind);
 
+    //Check if its a number expression
     if (typeof left === "number" && typeof right === "number") {
+        //Regular opertion as in 2 + 3...
         if (regularOperation !== undefined) {
             return regularOperation(left, right);
+            //number Boolean operation as in 2 > 3...
         } else if (numberBooleanOperation !== undefined) {
             return numberBooleanOperation(left, right);
         } else {
             throw new Error("Can't process this Binary Expression");
         }
+        //else if its booleans
     } else if (typeof left === "boolean" && typeof right === "boolean") {
         if (booleanOperation !== undefined) {
             return booleanOperation(left, right);
@@ -50,6 +55,7 @@ export function processExpression(
     }
 
     if (ts.isBinaryExpression(node)) {
+        //get left and right value
         const left = processExpression(node.left, mapStack);
         const right = processExpression(node.right, mapStack);
 

@@ -11,6 +11,7 @@ export function detectAndProcess(
     detectedVariableMap: MapStack,
     sourceFile: ts.SourceFile
 ) {
+    //Variable statment as in like defining a new variable and so.
     if (ts.isVariableStatement(node)) {
         const variableType = node.declarationList.getChildAt(0).getText();
         //calculate the value of that variable and add it to the variables array
@@ -38,6 +39,7 @@ export function detectAndProcess(
                 expression.name
             );
 
+            //Update the most recent stack scope to include this variable.
             detectedVariableMap.set(expression.name.getText(), [
                 variableValue,
                 variableType,
@@ -48,7 +50,6 @@ export function detectAndProcess(
                 name: expression.name.getText(),
 
                 value: variableValue,
-                //TODO: add you cant change constants and so
                 variableType: variableType,
                 text: node.getText(),
 
@@ -56,6 +57,7 @@ export function detectAndProcess(
                 identifierLocation,
             });
         });
+        //Expression statment as in like editing an existing variable
     } else if (ts.isExpressionStatement(node)) {
         const expressionVariable = editVariables(
             node,
@@ -71,16 +73,11 @@ export function detectAndProcess(
             ]);
         }
     } else if (ts.isBlock(node)) {
-        if (
-            !(
-                node.statements.length === 1 &&
-                ts.isIfStatement(node.statements[0])
-            )
-        ) {
-            //recursively make empty arrays and add them to the stack if theres another scope
-            detectedVariableMap.addNew();
-        }
+        //recursively make empty Maps and add them to the top of the stack
+        detectedVariableMap.addNew();
+        
 
+        //Recurse over every statment in the block and process it
         node.statements.forEach((child: ts.Statement) =>
             detectAndProcess(
                 child,
@@ -89,8 +86,10 @@ export function detectAndProcess(
                 sourceFile as ts.SourceFile
             )
         );
+        //pop at the end of the scope
         detectedVariableMap.pop();
     } else if (ts.isIfStatement(node)) {
+        //if statment
         detectAndProcess(
             node.thenStatement,
             detectedVariableStatements,
@@ -98,6 +97,7 @@ export function detectAndProcess(
             sourceFile as ts.SourceFile
         );
 
+        //the else statment
         if (node.elseStatement !== undefined) {
             detectAndProcess(
                 node.elseStatement,

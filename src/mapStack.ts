@@ -11,15 +11,16 @@ interface KeyValue {
     variableValue: number | boolean;
     variableType: string;
 }
-//TODO: make it compatible with boolean
 
 export class MapStack implements InterfaceStack {
     private storage: Array<Map<string, [number | boolean, string]>> = [];
 
+    //set on the most recent block
     set(name: string, value: [number | boolean, string]): void {
         this.storage[this.size()].set(name, value);
     }
 
+    //get value from current block and check previous blocks
     get(name: string): number | boolean | undefined {
         for (let i = this.size(); i >= 0; i--) {
             if (this.storage[i].has(name)) {
@@ -30,6 +31,7 @@ export class MapStack implements InterfaceStack {
         return undefined;
     }
 
+    //Get variable value and type... if exists.
     getInformation(name: string): KeyValue | undefined {
         for (let i = this.size(); i >= 0; i--) {
             if (this.storage[i].has(name)) {
