@@ -451,6 +451,6 @@ test("detectedVariable Scoping", () => {
             value: 11,
         },
     ];
-    expect(actual).toStrictEqual(expected);
-    //expectSubset(actual, expected);
+    //expect(actual).toStrictEqual(expected);
+    expectSubset(actual, expected);
 });
