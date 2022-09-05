@@ -30,7 +30,7 @@ export function analyzeCode(code: string): CodeAnalysis {
     }
 
     //Create array that will hold the variables that we want to work with.
-    let detectedVariableStatements: VariableStatementAnalysis[] = [];
+    const detectedVariableStatements: VariableStatementAnalysis[] = [];
     const detectedVariableMap: MapStack = new MapStack();
 
     //Add main scope

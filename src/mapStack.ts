@@ -7,7 +7,7 @@ interface InterfaceStack {
     size(): number;
 }
 
-interface keyValue {
+interface KeyValue {
     variableValue: number | boolean;
     variableType: string;
 }
@@ -30,7 +30,7 @@ export class MapStack implements InterfaceStack {
         return undefined;
     }
 
-    getInformation(name: string): keyValue | undefined {
+    getInformation(name: string): KeyValue | undefined {
         for (let i = this.size(); i >= 0; i--) {
             if (this.storage[i].has(name)) {
                 const key: [number | boolean, string] | undefined =
