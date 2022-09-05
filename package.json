@@ -4,7 +4,6 @@
     "description": "Typescript extension that shows value of variables through static analysis, for example defining var x = 5 + 6 will show 11 when you hover over the variable name. Currently support : boolean, numbers ",
     "version": "0.0.0",
     "license": "unlicense",
-    "private":true,
     "engines": {
         "vscode": "^1.32.0"
     },
@@ -71,6 +70,7 @@
         "watch-web": "webpack --watch --config ./build/web-extension.webpack.config.js",
         "package-web": "webpack --mode production --devtool hidden-source-map --config ./build/web-extension.webpack.config.js",
 
+        
         "prettier": "./node_modules/.bin/prettier --config ./config/prettier.json --write \"@(src|test|scripts)/**/*.@(ts|js|md|html|css|json)\"",
         "prettier-check": "./node_modules/.bin/prettier --config ./config/prettier.json --check \"@(src|test)/**/*.@(ts|js|md|html|css|json)\"",
         "eslint": "./node_modules/.bin/eslint --config ./config/eslint.json --no-eslintrc \"@(src|test|scripts)/**/*.@(ts|js)\"",
