@@ -75,7 +75,6 @@ export function detectAndProcess(
     } else if (ts.isBlock(node)) {
         //recursively make empty Maps and add them to the top of the stack
         detectedVariableMap.addNew();
-        
 
         //Recurse over every statment in the block and process it
         node.statements.forEach((child: ts.Statement) =>

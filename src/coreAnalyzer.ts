@@ -7,7 +7,7 @@ import {
 } from "./operations";
 import { MapStack } from "./mapStack";
 
-//Check types of expression and choose operation accordingly 
+//Check types of expression and choose operation accordingly
 function applyBinaryOperation(
     opToken: ts.BinaryExpression["operatorToken"],
     left: number | boolean,

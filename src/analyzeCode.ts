@@ -10,7 +10,6 @@ import { detectAndProcess } from "./detector";
  * @param code
  */
 export function analyzeCode(code: string): CodeAnalysis {
-
     const sourceFileName = "code.ts";
 
     const program = createProgramFromFiles(
