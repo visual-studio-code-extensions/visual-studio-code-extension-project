@@ -1,5 +1,7 @@
 import ts from "typescript";
 
+//TODO: && and ||
+
 export const regularOperations = new Map<
     ts.SyntaxKind,
     (a: number, b: number) => number

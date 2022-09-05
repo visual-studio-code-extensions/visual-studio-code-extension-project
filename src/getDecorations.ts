@@ -10,7 +10,7 @@ export function getDecorations(text: string): vscode.DecorationOptions[] {
 
         const range = new vscode.Range(
             startLine,
-            startCharacter + 1,
+            startCharacter,
             endLine,
             endCharacter
         );

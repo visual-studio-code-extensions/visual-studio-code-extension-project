@@ -1,11 +1,11 @@
 import ts from "typescript";
-import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import {
     regularOperations,
     numberBooleanOperations,
     booleanOperations,
     preFixUnaryExpression,
 } from "./operations";
+import { MapStack } from "./mapStack";
 
 function applyBinaryOperation(
     opToken: ts.BinaryExpression["operatorToken"],
@@ -43,15 +43,15 @@ export function processExpression(
         | ts.ParenthesizedExpression
         | ts.PrefixUnaryExpression
         | undefined,
-    detectedVariableStatements: VariableStatementAnalysis[]
+    mapStack: MapStack
 ): number | boolean | undefined {
     if (node === undefined) {
         throw new Error("Expression is undefined");
     }
 
     if (ts.isBinaryExpression(node)) {
-        const left = processExpression(node.left, detectedVariableStatements);
-        const right = processExpression(node.right, detectedVariableStatements);
+        const left = processExpression(node.left, mapStack);
+        const right = processExpression(node.right, mapStack);
 
         if (left !== undefined && right !== undefined) {
             return applyBinaryOperation(node.operatorToken, left, right);
@@ -61,9 +61,8 @@ export function processExpression(
         //in case variables were defined just with one numeric literal for example: const x = 2;
         return parseFloat(node.getText());
     } else if (ts.isIdentifier(node)) {
-        const identifierValue = detectedVariableStatements.find((variables) => {
-            return variables.name === node.getText();
-        });
+        const identifierValue = mapStack.get(node.getText());
+
         if (identifierValue === undefined) {
             throw new Error(
                 "Identifier" +
@@ -72,20 +71,17 @@ export function processExpression(
             );
         }
 
-        return identifierValue.value;
+        return identifierValue;
     } else if (ts.isParenthesizedExpression(node)) {
         //in case we encounter a (...) situation, for example const a = 2 + (2 + 4)
-        return processExpression(node.expression, detectedVariableStatements);
+        return processExpression(node.expression, mapStack);
     } else if (ts.isPrefixUnaryExpression(node)) {
         if (ts.isIdentifier(node.operand)) {
             //Case where we are doing ++i or --i
-            const elementIndex = detectedVariableStatements.findIndex(
-                (variables) => {
-                    return variables.name === node.operand.getText();
-                }
-            );
+            const identifierValue = mapStack.get(node.operand.getText());
+
             //variable not found
-            if (elementIndex === -1) {
+            if (identifierValue === undefined) {
                 throw new Error(
                     "Variable: " + node.operand.getText + " not defined"
                 );
@@ -93,11 +89,13 @@ export function processExpression(
 
             //Get operation from the map and apply it
             const operation = preFixUnaryExpression.get(node.operator);
-            const value = detectedVariableStatements[elementIndex].value;
 
             //Apply the correct operation
-            if (operation !== undefined && typeof value === "number") {
-                return operation(value);
+            if (
+                operation !== undefined &&
+                typeof identifierValue === "number"
+            ) {
+                return operation(identifierValue);
             }
             return undefined;
         } else {
@@ -112,10 +110,7 @@ export function processExpression(
             }
 
             //Cases where its -2 or +4 which is okay.
-            const value = processExpression(
-                node.operand,
-                detectedVariableStatements
-            );
+            const value = processExpression(node.operand, mapStack);
 
             //Get operation from the map and apply it
             const operation = preFixUnaryExpression.get(node.operator);

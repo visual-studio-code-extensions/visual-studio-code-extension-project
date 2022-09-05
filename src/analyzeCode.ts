@@ -1,13 +1,10 @@
 import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
-import { getNodePosition } from "./getNodePosition";
 import { MapStack } from "./mapStack";
 import { CodeAnalysis } from "./CodeAnalysis";
-import { processExpression } from "./coreAnalyzer";
-import { editVariables } from "./editVariable";
 import { BlockAnalysis } from "./BlockAnalysis";
-
+import { detectAndProcess } from "./detector";
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
@@ -34,8 +31,12 @@ export function analyzeCode(code: string): CodeAnalysis {
 
     //Create array that will hold the variables that we want to work with.
     let detectedVariableStatements: VariableStatementAnalysis[] = [];
+    const detectedVariableMap: MapStack = new MapStack();
+
+    //Add main scope
+    detectedVariableMap.addNew();
+
     const blockAnalysis: BlockAnalysis[] = [];
-    const stack = new MapStack();
 
     //Collect text(or other information) from every node and add it to the array
     function visitVariableStatement(node: ts.Node) {
@@ -44,77 +45,23 @@ export function analyzeCode(code: string): CodeAnalysis {
             node.parent === undefined ||
             node.parent.kind !== ts.SyntaxKind.Block
         ) {
-            if (ts.isVariableStatement(node)) {
-                const variableType = node.declarationList.getChildAt(0);
-                //calculate the value of that variable and add it to the variables array
-                const declarationsList = node.declarationList.declarations;
-                declarationsList.forEach(function (expression) {
-                    const variableValue = processExpression(
-                        //get the expression of the variable declaration
-                        expression.initializer,
-                        detectedVariableStatements
-                    );
-
-                    if (variableValue === undefined) {
-                        throw Error("Value is undefined");
-                    }
-
-                    //No need to check if source file is undefined, because we already did that earlier in the program.
-                    //Get position information
-                    const expressionLocation = getNodePosition(
-                        sourceFile as ts.SourceFile,
-                        node
-                    );
-
-                    const identifierLocation = getNodePosition(
-                        sourceFile as ts.SourceFile,
-                        expression.name
-                    );
-
-                    //Create new object that shows information of the variable and push it to the array
-                    detectedVariableStatements.push({
-                        name: expression.name.getText(),
-
-                        value: variableValue,
-                        //TODO: add you cant change constants and so
-                        variableType: variableType.getText(),
-                        text: node.getText(),
-
-                        expressionLocation,
-                        identifierLocation,
-                    });
-                });
-            } else if (ts.isExpressionStatement(node)) {
-                const updatedVariablesArray = editVariables(
-                    node,
-                    sourceFile as ts.SourceFile,
-                    detectedVariableStatements
-                );
-                if (updatedVariablesArray !== undefined) {
-                    detectedVariableStatements = updatedVariablesArray;
-                }
-            } else if (
-                ts.isBlock(node) &&
-                (node.parent.kind !== ts.SyntaxKind.IfStatement ||
-                    node.parent.kind === undefined)
-            ) {
-                //Create an empty array to recurse with on block number 1
-
-                processBlock(stack, node, blockAnalysis);
-            } else if (
-                ts.isIfStatement(node) &&
-                (node.parent.kind !== ts.SyntaxKind.IfStatement ||
-                    node.parent.kind === undefined)
-            ) {
-                processBlock(stack, node.thenStatement, blockAnalysis);
-
-                if (node.elseStatement !== undefined) {
-                    processBlock(stack, node.elseStatement, blockAnalysis);
-                }
-            }
+            detectAndProcess(
+                node,
+                detectedVariableStatements,
+                detectedVariableMap,
+                sourceFile as ts.SourceFile
+            );
+        } else if (ts.isBlock(node) || ts.isIfStatement(node)) {
+            processBlock(
+                node,
+                detectedVariableStatements,
+                detectedVariableMap,
+                sourceFile as ts.SourceFile
+            );
         }
     }
-    // iterate through source file searching for variable statements
+
+    // iterate through source file searchShadowing for variable statements
     visitNodeRecursive(sourceFile, visitVariableStatement);
 
     // TODO: actually do block analysis
@@ -126,10 +73,11 @@ export function analyzeCode(code: string): CodeAnalysis {
 }
 
 function processBlock(
-    stack: MapStack,
-    node: ts.Statement,
-    blockAnalysis: BlockAnalysis[]
-): MapStack {
+    node: ts.Node,
+    detectedVariableStatements: VariableStatementAnalysis[],
+    detectedVariableMap: MapStack,
+    sourceFile: ts.SourceFile
+) {
     if (ts.isBlock(node)) {
         if (
             !(
@@ -138,73 +86,114 @@ function processBlock(
             )
         ) {
             //recursively make empty arrays and add them to the stack if theres another scope
-            const empty: BlockAnalysis = {
-                referencedVariables: [],
-                localVariables: [],
-            };
-
-            stack.addNew();
-
-            blockAnalysis.push(empty);
+            detectedVariableMap.addNew();
         }
 
         node.statements.forEach((child: ts.Statement) =>
-            processBlock(stack, child, blockAnalysis)
+            detectAndProcess(
+                child,
+                detectedVariableStatements,
+                detectedVariableMap,
+                sourceFile as ts.SourceFile
+            )
         );
-        stack.pop();
-    } else if (ts.isVariableStatement(node)) {
-        const list = node.declarationList.declarations[0];
-        //In case its = identifier
-        if (list.initializer !== undefined) {
-            stack.set(list.name.getText(), 0);
-            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
-                name: list.name.getText(),
-                shadows: stack.search(list.initializer.getText()),
-            });
-        } else {
-            stack.set(list.name.getText(), 0);
-            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
-                name: list.name.getText(),
-                shadows: stack.search(list.name.getText()),
-            });
-        }
-    } else if (
-        ts.isExpressionStatement(node) &&
-        ts.isBinaryExpression(node.expression)
-    ) {
-        const identifier = node.expression.left;
-
-        if (ts.isIdentifier(node.expression.right)) {
-            stack.set(identifier.getText(), 0);
-            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
-                name: identifier.getText(),
-                shadows: stack.search(node.expression.left.getText()),
-            });
-
-            const variable = node.expression.right;
-            blockAnalysis[blockAnalysis.length - 1].referencedVariables.push({
-                name: variable.getText(),
-                block: stack.getScopeNumber(variable.getText()),
-            });
-        } else if (ts.isNumericLiteral(node.expression.right)) {
-            stack.set(identifier.getText(), 0);
-            blockAnalysis[blockAnalysis.length - 1].localVariables.push({
-                name: identifier.getText(),
-                shadows: stack.search(node.expression.left.getText()),
-            });
-        }
-    }
-    //TODO: Cases where if statements aren't made with blocks
-    else if (ts.isIfStatement(node)) {
-        processBlock(stack, node.thenStatement, blockAnalysis);
+        detectedVariableMap.pop();
+    } else if (ts.isIfStatement(node)) {
+        detectAndProcess(
+            node.thenStatement,
+            detectedVariableStatements,
+            detectedVariableMap,
+            sourceFile as ts.SourceFile
+        );
 
         if (node.elseStatement !== undefined) {
-            processBlock(stack, node.elseStatement, blockAnalysis);
+            detectAndProcess(
+                node.elseStatement,
+                detectedVariableStatements,
+                detectedVariableMap,
+                sourceFile as ts.SourceFile
+            );
         }
     }
-
-    return stack;
 }
+// function processBlock(
+//     stack: MapStack,
+//     node: ts.Statement,
+//     blockAnalysis: BlockAnalysis[]
+// ): void {
+//     if (ts.isBlock(node)) {
+//         if (
+//             !(
+//                 node.statements.length === 1 &&
+//                 ts.isIfStatement(node.statements[0])
+//             )
+//         ) {
+//             //recursively make empty arrays and add them to the stack if theres another scope
+//             const empty: BlockAnalysis = {
+//                 referencedVariables: [],
+//                 localVariables: [],
+//             };
+
+//             stack.addNew();
+
+//             blockAnalysis.push(empty);
+//         }
+
+//         node.statements.forEach((child: ts.Statement) =>
+//             processBlock(stack, child, blockAnalysis)
+//         );
+//         stack.pop();
+//     } else if (ts.isVariableStatement(node)) {
+//         const list = node.declarationList.declarations[0];
+//         //In case its = identifier
+//         if (list.initializer !== undefined) {
+//             stack.set(list.name.getText(), [0, ""]);
+//             blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+//                 name: list.name.getText(),
+//                 shadows: stack.searchShadow(list.initializer.getText()),
+//             });
+//         } else {
+//             stack.set(list.name.getText(), [0, ""]);
+//             blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+//                 name: list.name.getText(),
+//                 shadows: stack.searchShadow(list.name.getText()),
+//             });
+//         }
+//     } else if (
+//         ts.isExpressionStatement(node) &&
+//         ts.isBinaryExpression(node.expression)
+//     ) {
+//         const identifier = node.expression.left;
+
+//         if (ts.isIdentifier(node.expression.right)) {
+//             stack.set(identifier.getText(), [0, ""]);
+//             blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+//                 name: identifier.getText(),
+//                 shadows: stack.searchShadow(node.expression.left.getText()),
+//             });
+
+//             const variable = node.expression.right;
+//             blockAnalysis[blockAnalysis.length - 1].referencedVariables.push({
+//                 name: variable.getText(),
+//                 block: stack.getScopeNumber(variable.getText()),
+//             });
+//         } else if (ts.isNumericLiteral(node.expression.right)) {
+//             stack.set(identifier.getText(), [0, ""]);
+//             blockAnalysis[blockAnalysis.length - 1].localVariables.push({
+//                 name: identifier.getText(),
+//                 shadows: stack.searchShadow(node.expression.left.getText()),
+//             });
+//         }
+//     }
+//     //TODO: Cases where if statements aren't made with blocks
+//     else if (ts.isIfStatement(node)) {
+//         processBlock(stack, node.thenStatement, blockAnalysis);
+
+//         if (node.elseStatement !== undefined) {
+//             processBlock(stack, node.elseStatement, blockAnalysis);
+//         }
+//     }
+// }
 
 /**
  * recursively visits nodes and children

@@ -1,46 +1,73 @@
 interface InterfaceStack {
-    set(name: string, value: number): void;
-    pop(): Map<string, number> | undefined;
-    push(map: Map<string, number>): void;
-    peek(): Map<string, number> | undefined;
+    set(name: string, value: [number | boolean, string]): void;
+    get(name: string): number | boolean | undefined;
+    pop(): Map<string, [number | boolean, string]> | undefined;
+    push(map: Map<string, [number | boolean, string]>): void;
+    peek(): Map<string, [number | boolean, string]> | undefined;
     size(): number;
 }
 
-export class MapStack implements InterfaceStack {
-    private storage: Array<Map<string, number>> = [];
+interface keyValue {
+    variableValue: number | boolean;
+    variableType: string;
+}
+//TODO: make it compatible with boolean
 
-    set(name: string, value: number): void {
-        this.storage[this.size() - 1].set(name, value);
+export class MapStack implements InterfaceStack {
+    private storage: Array<Map<string, [number | boolean, string]>> = [];
+
+    set(name: string, value: [number | boolean, string]): void {
+        this.storage[this.size()].set(name, value);
     }
 
-    pop(): Map<string, number> | undefined {
+    get(name: string): number | boolean | undefined {
+        for (let i = this.size(); i >= 0; i--) {
+            if (this.storage[i].has(name)) {
+                return this.storage[i].get(name)?.[0];
+            }
+        }
+
+        return undefined;
+    }
+
+    getInformation(name: string): keyValue | undefined {
+        for (let i = this.size(); i >= 0; i--) {
+            if (this.storage[i].has(name)) {
+                const key: [number | boolean, string] | undefined =
+                    this.storage[i].get(name);
+                return key === undefined
+                    ? undefined
+                    : { variableValue: key[0], variableType: key[1] };
+            }
+        }
+
+        return undefined;
+    }
+
+    pop(): Map<string, [number | boolean, string]> | undefined {
         return this.storage.pop();
     }
 
-    push(map: Map<string, number>) {
+    push(map: Map<string, [number | boolean, string]>) {
         this.storage.push(map);
     }
 
-    peek(): Map<string, number> | undefined {
-        return this.storage[this.size() - 1];
+    peek(): Map<string, [number | boolean, string]> | undefined {
+        return this.storage[this.size()];
     }
 
     size(): number {
-        return this.storage.length;
+        return this.storage.length - 1;
     }
 
     empty(): void {
         this.storage.splice(0);
     }
 
-    updateLast(input: Map<string, number>): void {
-        this.storage[this.size() - 1] = input;
-    }
-
     getScopeNumber(input: string): number {
         //Takes a blockAnalysis in our case and search the stack array for and return the index to which scope number this is
         //-2 because we dont want to start in the same scope we are defining the variable
-        for (let i = this.size() - 2; i >= 0; i--) {
+        for (let i = this.size() - 1; i >= 0; i--) {
             if (this.storage[i].has(input)) {
                 return i;
             }
@@ -49,8 +76,9 @@ export class MapStack implements InterfaceStack {
         return -1;
     }
 
-    search(name: string): boolean {
-        for (let i = this.size() - 2; i >= 0; i--) {
+    //SearchShadow looks everywhere BUT the scope we are operating on.
+    searchShadow(name: string): boolean {
+        for (let i = this.size() - 1; i >= 0; i--) {
             if (this.storage[i].has(name)) {
                 return true;
             }
@@ -60,6 +88,6 @@ export class MapStack implements InterfaceStack {
     }
 
     addNew(): void {
-        this.storage.push(new Map<string, number>());
+        this.storage.push(new Map<string, [number | boolean, string]>());
     }
 }
