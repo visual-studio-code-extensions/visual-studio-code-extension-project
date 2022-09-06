@@ -1,14 +1,9 @@
-
-const x = 5;
-
-let y = x + 2;
-
-const a = 1 + 2 + 3 + 4 + 5;
-
-y++;
-
-const b = y < a;
-
-var t = true;
-
-t = false;
+let x : boolean = true;
+let y : number = 5;
+let z : number = 8;
+{
+    let a = y + z;
+    if (x) {
+        let z = y;
+    }
+}

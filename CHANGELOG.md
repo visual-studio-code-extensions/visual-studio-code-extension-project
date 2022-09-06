@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Scoping
 
-## [0.0.0] - 2021-02-12
+## [0.0.0] - 8/31/2022
 
 ### Added
 
@@ -20,3 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Highlight variables calculated
 
 - Be able to hover over variable
+
+## [0.0.0] - 9/9/2022
+
+### Added
+
+- Scoping
+
+- Added Readme
+
+- Hover message shows type of variable
+
+- Added support for && and ||
+
+### Changed
+
+- Fixed an issue where it was not picking the right variable

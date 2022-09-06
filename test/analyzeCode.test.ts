@@ -454,3 +454,48 @@ test("detectedVariable Scoping", () => {
     //expect(actual).toStrictEqual(expected);
     expectSubset(actual, expected);
 });
+
+test("multi assignment", () => {
+    const code = `{
+            let y = 5;
+
+            {
+            let shadow = 1;
+                if (true) {
+                    shadow = y;
+                    const a = shadow;
+                }
+            }
+        }`;
+
+    const expected = [
+        {
+            name: "y",
+            text: "let y = 5;",
+            variableType: "let",
+            value: 5,
+        },
+        {
+            name: "shadow",
+            text: "let shadow = 1;",
+            variableType: "let",
+            value: 1,
+        },
+        {
+            name: "shadow",
+            text: "shadow = y;",
+            variableType: "let",
+            value: 5,
+        },
+        {
+            name: "a",
+            text: "const a = shadow;",
+            variableType: "const",
+            value: 5,
+        },
+    ];
+
+    const actual = analyzeCode(code).blockAnalysis;
+    expect(actual).toStrictEqual(expected);
+    //expectSubset(actual, expected);
+});
