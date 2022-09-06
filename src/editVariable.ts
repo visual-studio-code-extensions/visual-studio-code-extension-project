@@ -21,7 +21,9 @@ export function editVariables(
         if (identifierValue === undefined) {
             throw new Error(
                 "Variable not defined, variable name: " +
-                    nodeExpression.left.getText()
+                    nodeExpression.left.getText() +
+                    " for expression: " +
+                    nodeExpression.getFullText()
             );
         }
 

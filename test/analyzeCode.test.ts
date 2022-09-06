@@ -456,7 +456,8 @@ test("detectedVariable Scoping", () => {
 });
 
 test("multi assignment", () => {
-    const code = `{
+    const code = `
+    {
             let y = 5;
 
             {
@@ -495,7 +496,7 @@ test("multi assignment", () => {
         },
     ];
 
-    const actual = analyzeCode(code).blockAnalysis;
-    expect(actual).toStrictEqual(expected);
-    //expectSubset(actual, expected);
+    const actual = analyzeCode(code).variableStatementAnalysis;
+    //expect(actual).toStrictEqual(expected);
+    expectSubset(actual, expected);
 });

@@ -43,7 +43,8 @@ export function analyzeCode(code: string): CodeAnalysis {
         //check if the parent is a block, blocks are already processed through detectAndProcess so we don't want to process it twice.
         if (
             node.parent === undefined ||
-            node.parent.kind !== ts.SyntaxKind.Block
+            (node.parent.kind !== ts.SyntaxKind.Block &&
+                node.parent.kind !== ts.SyntaxKind.IfStatement)
         ) {
             detectAndProcess(
                 node,
