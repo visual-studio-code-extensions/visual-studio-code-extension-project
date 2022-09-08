@@ -1,5 +1,7 @@
 # TYPESCRIPT AST PARSER VISUAL STUDIO CODE EXTENSION
 
+![Alt Text](https://user-images.githubusercontent.com/76471403/188575936-e6a2ef3c-68f2-4da8-a8a1-f8cdac0c8ded.gif)
+
 This Visual Studio extension does static analysis on TypeScript code to help people during development.
 
 ## Extension Overview
@@ -57,10 +59,6 @@ npm run test
 
 F5 and open the sample folder and click sample.ts.
 Click on 'Run' and then "Start Debugging"
-
-## Testing
-
-![Alt Text](https://user-images.githubusercontent.com/76471403/188575936-e6a2ef3c-68f2-4da8-a8a1-f8cdac0c8ded.gif)
 
 ## Key Files
 
