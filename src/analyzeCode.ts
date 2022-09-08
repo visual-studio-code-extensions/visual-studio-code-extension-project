@@ -4,7 +4,7 @@ import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { MapStack } from "./mapStack";
 import { CodeAnalysis } from "./CodeAnalysis";
 import { BlockAnalysis } from "./BlockAnalysis";
-import { detectAndProcess } from "./detector";
+import { detectAndProcess } from "./detectAndProcess";
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code

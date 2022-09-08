@@ -2,7 +2,7 @@ import ts from "typescript";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
 import { postFixUnaryExpression } from "./operations";
-import { processExpression } from "./coreAnalyzer";
+import { processExpression } from "./processExpression";
 import { MapStack } from "./mapStack";
 
 export function editVariables(

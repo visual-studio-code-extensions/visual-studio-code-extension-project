@@ -14,7 +14,7 @@ describe("basic", () => {
             {
                 name: "x",
                 text: "const x = 2 + 5 + 2;",
-                variableType: "const",
+                variableType: "const" as const,
                 value: 9,
             },
         ];
@@ -31,7 +31,7 @@ test("single boolean expression", () => {
         {
             name: "x",
             text: "const x : boolean = true;",
-            variableType: "const",
+            variableType: "const" as const,
             value: true,
         },
     ];
@@ -49,19 +49,19 @@ test("multiple boolean expression", () => {
         {
             name: "x",
             text: "const x : boolean = true;",
-            variableType: "const",
+            variableType: "const" as const,
             value: true,
         },
         {
             name: "y",
             text: "const y : boolean = 4 > 3;",
-            variableType: "const",
+            variableType: "const" as const,
             value: true,
         },
         {
             name: "z",
             text: "const z : boolean = 5 === 8;",
-            variableType: "const",
+            variableType: "const" as const,
             value: false,
         },
     ];
@@ -78,14 +78,78 @@ test("Edit boolean variable", () => {
         {
             name: "y",
             text: "let y : boolean = 5 > 9;",
-            variableType: "let",
+            variableType: "let" as const,
             value: false,
         },
         {
             name: "y",
             text: "y = 5 < 9;",
-            variableType: "let",
+            variableType: "let" as const,
             value: true,
+        },
+    ];
+    expectSubset(actual, expected);
+});
+
+test("Boolean and numbers reassingment/expressions", () => {
+    const code = `const x = 5;
+
+    let y = x + 2;
+    
+    const a = 1 + 2 + 3 + 4 + 5;
+    
+    y++;
+    
+    const b = y < a;
+    
+    let t = true;
+    
+    t = false;`;
+
+    const actual = analyzeCode(code).variableStatementAnalysis;
+
+    const expected = [
+        {
+            name: "x",
+            text: "const x = 5;",
+            variableType: "const" as const,
+            value: 5,
+        },
+        {
+            name: "y",
+            text: "let y = x + 2;",
+            variableType: "let" as const,
+            value: 7,
+        },
+        {
+            name: "a",
+            text: "const a = 1 + 2 + 3 + 4 + 5;",
+            variableType: "const" as const,
+            value: 15,
+        },
+        {
+            name: "y",
+            text: "y++;",
+            variableType: "let" as const,
+            value: 8,
+        },
+        {
+            name: "b",
+            text: "const b = y < a;",
+            variableType: "const" as const,
+            value: true,
+        },
+        {
+            name: "t",
+            text: "let t = true;",
+            variableType: "let" as const,
+            value: true,
+        },
+        {
+            name: "t",
+            text: "t = false;",
+            variableType: "let" as const,
+            value: false,
         },
     ];
     expectSubset(actual, expected);
@@ -102,19 +166,19 @@ test("Edit variable", () => {
         {
             name: "y",
             text: "let y = 2 + 5;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 7,
         },
         {
             name: "y",
             text: "y = 2;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 2,
         },
         {
             name: "y",
             text: "y = 5;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 5,
         },
     ];
@@ -133,37 +197,37 @@ test("PrefixUnaryExpression and PrefixUnaryExpression", () => {
         {
             name: "f",
             text: "let f = -5;",
-            variableType: "let",
+            variableType: "let" as const,
             value: -5,
         },
         {
             name: "w",
             text: "let w = +6;",
-            variableType: "let",
+            variableType: "let" as const,
             value: +6,
         },
         {
             name: "f",
             text: "--f;",
-            variableType: "let",
+            variableType: "let" as const,
             value: -6,
         },
         {
             name: "w",
             text: "++w;",
-            variableType: "let",
+            variableType: "let" as const,
             value: +7,
         },
         {
             name: "f",
             text: "f--;",
-            variableType: "let",
+            variableType: "let" as const,
             value: -7,
         },
         {
             name: "w",
             text: "w++;",
-            variableType: "let",
+            variableType: "let" as const,
             value: +8,
         },
     ];
@@ -178,7 +242,7 @@ test("Expression with multiple predefined variables", () => {
                 const b = 6 + 1;
                 const c = a + b;
                 const d = 3;
-                var e = d + 2;
+                let e = d + 2;
                 const f = 2 + c;
                 const g = 6 + (5 + 2);`;
 
@@ -186,43 +250,43 @@ test("Expression with multiple predefined variables", () => {
         {
             name: "a",
             text: "const a = 2 + 5;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 7,
         },
         {
             name: "b",
             text: "const b = 6 + 1;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 7,
         },
         {
             name: "c",
             text: "const c = a + b;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 14,
         },
         {
             name: "d",
             text: "const d = 3;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 3,
         },
         {
             name: "e",
-            text: "var e = d + 2;",
-            variableType: "var",
+            text: "let e = d + 2;",
+            variableType: "let" as const,
             value: 5,
         },
         {
             name: "f",
             text: "const f = 2 + c;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 16,
         },
         {
             name: "g",
             text: "const g = 6 + (5 + 2);",
-            variableType: "const",
+            variableType: "const" as const,
             value: 13,
         },
     ];
@@ -239,7 +303,7 @@ test("simple assignment", () => {
         {
             name: "x",
             text: "const x = 1 + 2;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 3,
         },
     ];
@@ -429,25 +493,25 @@ test("detectedVariable Scoping", () => {
         {
             name: "a",
             text: "let a = 4;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 4,
         },
         {
             name: "a",
             text: "a = 9;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 9,
         },
         {
             name: "b",
             text: "const b = 2;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 2,
         },
         {
             name: "c",
             text: "const c = a + b;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 11,
         },
     ];
@@ -473,25 +537,25 @@ test("multi assignment", () => {
         {
             name: "y",
             text: "let y = 5;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 5,
         },
         {
             name: "shadow",
             text: "let shadow = 1;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 1,
         },
         {
             name: "shadow",
             text: "shadow = y;",
-            variableType: "let",
+            variableType: "let" as const,
             value: 5,
         },
         {
             name: "a",
             text: "const a = shadow;",
-            variableType: "const",
+            variableType: "const" as const,
             value: 5,
         },
     ];

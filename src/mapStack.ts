@@ -1,30 +1,34 @@
+type Block = Map<string, KeyValue>;
+export type variableTypes = "let" | "const" ;
+export type variableValues = number | boolean;
 interface InterfaceStack {
-    set(name: string, value: [number | boolean, string]): void;
-    get(name: string): number | boolean | undefined;
-    pop(): Map<string, [number | boolean, string]> | undefined;
-    push(map: Map<string, [number | boolean, string]>): void;
-    peek(): Map<string, [number | boolean, string]> | undefined;
+    set(name: string, value: KeyValue): void;
+    get(name: string): variableValues | undefined;
+    pop(): Map<string, KeyValue> | undefined;
+    push(map: Map<string, KeyValue>): void;
+    peek(): Map<string, KeyValue> | undefined;
     size(): number;
 }
 
 interface KeyValue {
-    variableValue: number | boolean;
-    variableType: string;
+    variableValue: variableValues;
+    variableType: variableTypes;
 }
 
 export class MapStack implements InterfaceStack {
-    private storage: Array<Map<string, [number | boolean, string]>> = [];
+    private storage: Array<Block> = [];
 
     //set on the most recent block
-    set(name: string, value: [number | boolean, string]): void {
+    set(name: string, value: KeyValue): void {
         this.storage[this.size()].set(name, value);
     }
 
     //get value from current block and check previous blocks
-    get(name: string): number | boolean | undefined {
+    get(name: string): variableValues | undefined {
         for (let i = this.size(); i >= 0; i--) {
-            if (this.storage[i].has(name)) {
-                return this.storage[i].get(name)?.[0];
+            const currentBlock = this.storage[i];
+            if (currentBlock.has(name)) {
+                return currentBlock.get(name)?.variableValue;
             }
         }
 
@@ -34,27 +38,25 @@ export class MapStack implements InterfaceStack {
     //Get variable value and type... if exists.
     getInformation(name: string): KeyValue | undefined {
         for (let i = this.size(); i >= 0; i--) {
-            if (this.storage[i].has(name)) {
-                const key: [number | boolean, string] | undefined =
-                    this.storage[i].get(name);
-                return key === undefined
-                    ? undefined
-                    : { variableValue: key[0], variableType: key[1] };
+            const currentBlock = this.storage[i];
+            if (currentBlock.has(name)) {
+                const key: KeyValue | undefined = currentBlock.get(name);
+                return key === undefined ? undefined : key;
             }
         }
 
         return undefined;
     }
 
-    pop(): Map<string, [number | boolean, string]> | undefined {
+    pop(): Map<string, KeyValue> | undefined {
         return this.storage.pop();
     }
 
-    push(map: Map<string, [number | boolean, string]>) {
+    push(map: Map<string, KeyValue>) {
         this.storage.push(map);
     }
 
-    peek(): Map<string, [number | boolean, string]> | undefined {
+    peek(): Map<string, KeyValue> | undefined {
         return this.storage[this.size()];
     }
 
@@ -90,6 +92,7 @@ export class MapStack implements InterfaceStack {
     }
 
     addNew(): void {
-        this.storage.push(new Map<string, [number | boolean, string]>());
+        const newScope: Block = new Map<string, KeyValue>();
+        this.storage.push(newScope);
     }
 }

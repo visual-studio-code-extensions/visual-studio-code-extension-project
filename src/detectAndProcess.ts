@@ -2,7 +2,7 @@ import ts from "typescript";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
 import { MapStack } from "./mapStack";
-import { processExpression } from "./coreAnalyzer";
+import { processExpression } from "./processExpression";
 import { editVariables } from "./editVariable";
 
 export function detectAndProcess(
@@ -14,6 +14,12 @@ export function detectAndProcess(
     //Variable statment as in like defining a new variable and so.
     if (ts.isVariableStatement(node)) {
         const variableType = node.declarationList.getChildAt(0).getText();
+        if (variableType !== "const" && variableType !== "let") {
+            throw new Error(
+                "Can only process const and let statements, please change following statment: " +
+                    node.getText()
+            );
+        }
         //calculate the value of that variable and add it to the variables array
         const declarationsList = node.declarationList.declarations;
         declarationsList.forEach(function (expression) {
@@ -26,6 +32,7 @@ export function detectAndProcess(
             if (variableValue === undefined) {
                 throw Error("Value is undefined");
             }
+            
 
             //No need to check if source file is undefined, because we already did that earlier in the program.
             //Get position information
@@ -40,10 +47,10 @@ export function detectAndProcess(
             );
 
             //Update the most recent stack scope to include this variable.
-            detectedVariableMap.set(expression.name.getText(), [
-                variableValue,
-                variableType,
-            ]);
+            detectedVariableMap.set(expression.name.getText(), {
+                variableValue: variableValue,
+                variableType: variableType,
+            });
 
             //Create new object that shows information of the variable and push it to the array
             detectedVariableStatements.push({
@@ -67,10 +74,10 @@ export function detectAndProcess(
 
         if (expressionVariable !== undefined) {
             detectedVariableStatements.push(expressionVariable);
-            detectedVariableMap.set(expressionVariable.name, [
-                expressionVariable.value,
-                expressionVariable.variableType,
-            ]);
+            detectedVariableMap.set(expressionVariable.name, {
+                variableType: expressionVariable.variableType,
+                variableValue: expressionVariable.value,
+            });
         }
     } else if (ts.isBlock(node)) {
         //recursively make empty Maps and add them to the top of the stack

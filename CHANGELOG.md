@@ -7,9 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Scoping
-
-## [0.0.0] - 8/31/2022
+## [0.0.0] - 2022-08-31
 
 ### Added
 
@@ -21,7 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Be able to hover over variable
 
-## [0.0.0] - 9/9/2022
+- Support const and let expressions
+
+- support reassignment expressions
+
+## [1.0.0] - 2022-09-09
 
 ### Added
 
