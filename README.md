@@ -1,12 +1,13 @@
 # TYPESCRIPT AST PARSER VISUAL STUDIO CODE EXTENSION
 
-![Alt Text](https://user-images.githubusercontent.com/76471403/188575936-e6a2ef3c-68f2-4da8-a8a1-f8cdac0c8ded.gif)
-
 This Visual Studio extension does static analysis on TypeScript code to help people during development.
 
 ## Extension Overview
 
 This extension parses the Typescript's abstract syntax tree to perform static analysis and shows values for variables in the file without compiling the program. Making it easier to debug Typescript code
+
+![Alt Text](https://user-images.githubusercontent.com/76471403/188575936-e6a2ef3c-68f2-4da8-a8a1-f8cdac0c8ded.gif)
+
 
 ## Installation
 
