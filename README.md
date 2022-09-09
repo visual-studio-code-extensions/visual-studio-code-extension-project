@@ -65,20 +65,20 @@ Click on 'Run' and then "Start Debugging"
 
 **SRC**|**Purpose**
 :-----:|:-----:
-analyzeCode.ts|Runs code in the background recursing as code changes
-BlockAnalysis.ts|Analyzes user's code in a block
-CodeAnalysis.ts|Runs Block Analysis and Variable Statement Analysis in code
-CodeLocation.ts|Provides location inside code
-coreAnalyzer.ts|Analysis of code core components
-createProgramFromFiles.ts|Custom file compiler into a program
-editVariable.ts|Defines user variables and updates type and values
+analyzeCode.ts|Parse the Abstract Syntax Tree from the source file and visit every node
+BlockAnalysis.ts|Object used to debug scoping analysis in the algorithm
+CodeAnalysis.ts|Object to hold BlockAnalysis and VariableStatementAnalysis arrays
+CodeLocation.ts|Object to hold location information of each identifier name to highlight
+createProgramFromFiles.ts|Create a program from the given code
+editVariable.ts|Reassign existing variables
 extension.ts|Main code that runs when extension is activated
 getDecorations.ts|Highlights, underlines, colors user's code
-getNodePosition.ts|Provides node positions in the user's code
-logTrace.ts|Trace Program Actions
-mapStack.ts|Breaks down and maps extension user's code
-operations.ts|Defines operations performed in the user's code to be performed in the background
-VariableStatementAnalysis.ts|Break down and classifies user variables
+getNodePosition.ts|Provides node positions to highlight
+logTrace.ts|Trace extension for errors
+mapStack.ts|Store variables information into a stack of maps
+operations.ts|Operations that the extension can process, used by "processExpression"
+processExpression|Process all expressions and return value at the end, for example 3+2 gives 5
+VariableStatementAnalysis.ts|Object to hold information about every variable
 
 
 ## Contributing
