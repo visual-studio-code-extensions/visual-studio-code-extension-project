@@ -32,7 +32,6 @@ export function detectAndProcess(
             if (variableValue === undefined) {
                 throw Error("Value is undefined");
             }
-            
 
             //No need to check if source file is undefined, because we already did that earlier in the program.
             //Get position information

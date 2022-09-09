@@ -1,9 +1,9 @@
 type Block = Map<string, KeyValue>;
-export type variableTypes = "let" | "const" ;
-export type variableValues = number | boolean;
+export type VariableTypes = "let" | "const";
+export type VariableValues = number | boolean;
 interface InterfaceStack {
     set(name: string, value: KeyValue): void;
-    get(name: string): variableValues | undefined;
+    get(name: string): VariableValues | undefined;
     pop(): Map<string, KeyValue> | undefined;
     push(map: Map<string, KeyValue>): void;
     peek(): Map<string, KeyValue> | undefined;
@@ -11,8 +11,8 @@ interface InterfaceStack {
 }
 
 interface KeyValue {
-    variableValue: variableValues;
-    variableType: variableTypes;
+    variableValue: VariableValues;
+    variableType: VariableTypes;
 }
 
 export class MapStack implements InterfaceStack {
@@ -24,7 +24,7 @@ export class MapStack implements InterfaceStack {
     }
 
     //get value from current block and check previous blocks
-    get(name: string): variableValues | undefined {
+    get(name: string): VariableValues | undefined {
         for (let i = this.size(); i >= 0; i--) {
             const currentBlock = this.storage[i];
             if (currentBlock.has(name)) {
