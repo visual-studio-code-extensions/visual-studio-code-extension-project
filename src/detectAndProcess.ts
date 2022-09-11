@@ -71,7 +71,7 @@ export function detectAndProcess(
             detectedVariableMap
         );
 
-        if (expressionVariable !== undefined) {
+        if (expressionVariable) {
             detectedVariableStatements.push(expressionVariable);
             detectedVariableMap.set(expressionVariable.name, {
                 variableType: expressionVariable.variableType,
@@ -103,7 +103,7 @@ export function detectAndProcess(
         );
 
         //the else statment
-        if (node.elseStatement !== undefined) {
+        if (node.elseStatement) {
             detectAndProcess(
                 node.elseStatement,
                 detectedVariableStatements,

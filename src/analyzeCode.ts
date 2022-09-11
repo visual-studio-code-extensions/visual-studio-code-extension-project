@@ -24,7 +24,7 @@ export function analyzeCode(code: string): CodeAnalysis {
 
     const sourceFile = program.getSourceFile(sourceFileName);
 
-    if (sourceFile === undefined) {
+    if (!sourceFile) {
         throw new Error("sourceFile is undefined");
     }
 
@@ -42,7 +42,7 @@ export function analyzeCode(code: string): CodeAnalysis {
     function visitVariableStatement(node: ts.Node) {
         //check if the parent is a block, blocks are already processed through detectAndProcess so we don't want to process it twice.
         if (
-            node.parent === undefined ||
+            !node.parent ||
             (node.parent.kind !== ts.SyntaxKind.Block &&
                 node.parent.kind !== ts.SyntaxKind.IfStatement)
         ) {

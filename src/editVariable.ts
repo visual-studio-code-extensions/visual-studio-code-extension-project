@@ -18,7 +18,7 @@ export function editVariables(
         );
 
         //variable not found in the array
-        if (identifierValue === undefined) {
+        if (!identifierValue) {
             throw new Error(
                 "Variable not defined, variable name: " +
                     nodeExpression.left.getText() +
@@ -68,7 +68,7 @@ export function editVariables(
             );
 
             //variable not found
-            if (identifierValue === undefined) {
+            if (!identifierValue) {
                 throw new Error("Variable not defined");
             }
 
@@ -93,10 +93,7 @@ export function editVariables(
             );
 
             //value has to be a number because you can't do True++
-            if (
-                operation !== undefined &&
-                typeof newVariableValue === "number"
-            ) {
+            if (operation && typeof newVariableValue === "number") {
                 return {
                     name: nodeExpression.operand.getText(),
                     value: operation(newVariableValue),

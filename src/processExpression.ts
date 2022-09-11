@@ -20,17 +20,17 @@ function applyBinaryOperation(
     //Check if its a number expression
     if (typeof left === "number" && typeof right === "number") {
         //Regular opertion as in 2 + 3...
-        if (regularOperation !== undefined) {
+        if (regularOperation) {
             return regularOperation(left, right);
             //number Boolean operation as in 2 > 3...
-        } else if (numberBooleanOperation !== undefined) {
+        } else if (numberBooleanOperation) {
             return numberBooleanOperation(left, right);
         } else {
             throw new Error("Can't process this Binary Expression");
         }
         //else if its booleans
     } else if (typeof left === "boolean" && typeof right === "boolean") {
-        if (booleanOperation !== undefined) {
+        if (booleanOperation) {
             return booleanOperation(left, right);
         } else {
             throw new Error("Can't process this Binary Expression");
@@ -50,7 +50,7 @@ export function processExpression(
         | undefined,
     mapStack: MapStack
 ): number | boolean | undefined {
-    if (node === undefined) {
+    if (!node) {
         throw new Error("Expression is undefined");
     }
 
@@ -59,7 +59,7 @@ export function processExpression(
         const left = processExpression(node.left, mapStack);
         const right = processExpression(node.right, mapStack);
 
-        if (left !== undefined && right !== undefined) {
+        if (left && right) {
             return applyBinaryOperation(node.operatorToken, left, right);
         }
         return undefined;
@@ -69,7 +69,7 @@ export function processExpression(
     } else if (ts.isIdentifier(node)) {
         const identifierValue = mapStack.get(node.getText());
 
-        if (identifierValue === undefined) {
+        if (!identifierValue) {
             throw new Error(
                 "Identifier" +
                     node.getText() +
@@ -87,7 +87,7 @@ export function processExpression(
             const identifierValue = mapStack.get(node.operand.getText());
 
             //variable not found
-            if (identifierValue === undefined) {
+            if (!identifierValue) {
                 throw new Error(
                     "Variable: " + node.operand.getText + " not defined"
                 );
@@ -97,10 +97,7 @@ export function processExpression(
             const operation = preFixUnaryExpression.get(node.operator);
 
             //Apply the correct operation
-            if (
-                operation !== undefined &&
-                typeof identifierValue === "number"
-            ) {
+            if (operation && typeof identifierValue === "number") {
                 return operation(identifierValue);
             }
             return undefined;
@@ -120,7 +117,7 @@ export function processExpression(
 
             //Get operation from the map and apply it
             const operation = preFixUnaryExpression.get(node.operator);
-            if (typeof value === "number" && operation !== undefined) {
+            if (typeof value === "number" && operation) {
                 return operation(value);
             } else {
                 return undefined;

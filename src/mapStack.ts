@@ -41,7 +41,7 @@ export class MapStack implements InterfaceStack {
             const currentBlock = this.storage[i];
             if (currentBlock.has(name)) {
                 const key: KeyValue | undefined = currentBlock.get(name);
-                return key === undefined ? undefined : key;
+                return !key ? undefined : key;
             }
         }
 
