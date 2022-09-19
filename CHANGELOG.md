@@ -7,9 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Scoping
-
-## [0.0.0] - 2021-02-12
+## [0.0.0] - 2022-08-31
 
 ### Added
 
@@ -20,3 +18,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Highlight variables calculated
 
 - Be able to hover over variable
+
+- Support const and let expressions
+
+- support reassignment expressions
+
+## [1.0.0] - 2022-09-09
+
+### Added
+
+- Scoping
+
+- Added Readme
+
+- Hover message shows type of variable
+
+- Added support for && and ||
+
+### Changed
+
+- Fixed an issue where it was not picking the right variable

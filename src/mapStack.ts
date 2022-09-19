@@ -1,44 +1,76 @@
+type Block = Map<string, KeyValue>;
+export type VariableTypes = "let" | "const";
+export type VariableValues = number | boolean;
 interface InterfaceStack {
-    set(name: string, value: number): void;
-    pop(): Map<string, number> | undefined;
-    push(map: Map<string, number>): void;
-    peek(): Map<string, number> | undefined;
+    set(name: string, value: KeyValue): void;
+    get(name: string): VariableValues | undefined;
+    pop(): Map<string, KeyValue> | undefined;
+    push(map: Map<string, KeyValue>): void;
+    peek(): Map<string, KeyValue> | undefined;
     size(): number;
 }
 
-export class MapStack implements InterfaceStack {
-    private storage: Array<Map<string, number>> = [];
+interface KeyValue {
+    variableValue: VariableValues;
+    variableType: VariableTypes;
+}
 
-    set(name: string, value: number): void {
-        this.storage[this.size() - 1].set(name, value);
+export class MapStack implements InterfaceStack {
+    private storage: Array<Block> = [];
+
+    //set on the most recent block
+    set(name: string, value: KeyValue): void {
+        this.storage[this.size()].set(name, value);
     }
 
-    pop(): Map<string, number> | undefined {
+    //get value from current block and check previous blocks
+    get(name: string): VariableValues | undefined {
+        for (let i = this.size(); i >= 0; i--) {
+            const currentBlock = this.storage[i];
+            if (currentBlock.has(name)) {
+                return currentBlock.get(name)?.variableValue;
+            }
+        }
+
+        return undefined;
+    }
+
+    //Get variable value and type... if exists.
+    getInformation(name: string): KeyValue | undefined {
+        for (let i = this.size(); i >= 0; i--) {
+            const currentBlock = this.storage[i];
+            if (currentBlock.has(name)) {
+                const key: KeyValue | undefined = currentBlock.get(name);
+                return !key ? undefined : key;
+            }
+        }
+
+        return undefined;
+    }
+
+    pop(): Map<string, KeyValue> | undefined {
         return this.storage.pop();
     }
 
-    push(map: Map<string, number>) {
+    push(map: Map<string, KeyValue>) {
         this.storage.push(map);
     }
 
-    peek(): Map<string, number> | undefined {
-        return this.storage[this.size() - 1];
+    peek(): Map<string, KeyValue> | undefined {
+        return this.storage[this.size()];
     }
 
     size(): number {
-        return this.storage.length;
+        return this.storage.length - 1;
     }
 
     empty(): void {
         this.storage.splice(0);
     }
 
-    updateLast(input: Map<string, number>): void {
-        this.storage[this.size() - 1] = input;
-    }
-
     getScopeNumber(input: string): number {
         //Takes a blockAnalysis in our case and search the stack array for and return the index to which scope number this is
+        //-2 because we dont want to start in the same scope we are defining the variable
         for (let i = this.size() - 1; i >= 0; i--) {
             if (this.storage[i].has(input)) {
                 return i;
@@ -48,15 +80,19 @@ export class MapStack implements InterfaceStack {
         return -1;
     }
 
-    search(name: string): boolean {
-        let returnIndex = false;
-        this.storage.forEach((element) => {
-            const index = element.has(name);
-            if (index === true) {
-                returnIndex = index;
+    //SearchShadow looks everywhere BUT the scope we are operating on.
+    searchShadow(name: string): boolean {
+        for (let i = this.size() - 1; i >= 0; i--) {
+            if (this.storage[i].has(name)) {
+                return true;
             }
-        });
+        }
 
-        return returnIndex;
+        return false;
+    }
+
+    addNew(): void {
+        const newScope: Block = new Map<string, KeyValue>();
+        this.storage.push(newScope);
     }
 }

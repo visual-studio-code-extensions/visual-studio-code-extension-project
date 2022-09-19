@@ -2,39 +2,45 @@ import ts from "typescript";
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
 import { getNodePosition } from "./getNodePosition";
 import { postFixUnaryExpression } from "./operations";
-
-import { processExpression } from "./coreAnalyzer";
+import { processExpression } from "./processExpression";
+import { MapStack } from "./mapStack";
 
 export function editVariables(
     node: ts.ExpressionStatement,
     sourceFile: ts.SourceFile,
-    detectedVariableStatements: VariableStatementAnalysis[]
-): VariableStatementAnalysis[] | undefined {
+    mapStack: MapStack
+): VariableStatementAnalysis | undefined {
     const nodeExpression = node.expression;
     //calculate binary expression and update its value
     if (ts.isBinaryExpression(nodeExpression)) {
-        const elementIndex = detectedVariableStatements.findIndex(
-            (variables) => {
-                return variables.name === nodeExpression.left.getText();
-            }
+        const identifierValue = mapStack.getInformation(
+            nodeExpression.left.getText()
         );
+
         //variable not found in the array
-        if (elementIndex === -1) {
+        if (!identifierValue) {
             throw new Error(
                 "Variable not defined, variable name: " +
-                    nodeExpression.left.getText()
+                    nodeExpression.left.getText() +
+                    " for expression: " +
+                    nodeExpression.getFullText()
             );
         }
 
-        if (detectedVariableStatements[elementIndex].variableType === "const") {
+        if (identifierValue.variableType === "const") {
             throw new Error("Can't redefine a constant");
         }
 
         //Get the new variable value
         const newVariableValue = processExpression(
             nodeExpression.right,
-            detectedVariableStatements
+            mapStack
         );
+
+        //Check if undefined and throw an error if so
+        if (newVariableValue === undefined) {
+            throw Error("Value is undefined");
+        }
 
         const expressionLocation = getNodePosition(sourceFile, nodeExpression);
 
@@ -43,45 +49,30 @@ export function editVariables(
             nodeExpression.left
         );
 
-        //Check if undefined and throw an error if so
-        if (newVariableValue === undefined) {
-            throw Error("Value is undefined");
-        }
-
-        //since right would always be binary expression we want to process that, and update the variable value
-
-        detectedVariableStatements.push({
-            name: detectedVariableStatements[elementIndex].name,
+        return {
+            name: nodeExpression.left.getText(),
             value: newVariableValue,
-            //TODO: add you cant change constants and so
-            variableType: detectedVariableStatements[elementIndex].variableType,
+            variableType: identifierValue.variableType,
             text: node.getText(),
             expressionLocation,
             identifierLocation,
-        });
-
-        return detectedVariableStatements;
+        };
     } else if (
         //else if we encounter a i++ or --i case
         ts.isPostfixUnaryExpression(nodeExpression) ||
         ts.isPrefixUnaryExpression(nodeExpression)
     ) {
         if (ts.isIdentifier(nodeExpression.operand)) {
-            const elementIndex = detectedVariableStatements.findIndex(
-                (variables) => {
-                    return variables.name === nodeExpression.operand.getText();
-                }
+            const identifierValue = mapStack.getInformation(
+                nodeExpression.operand.getText()
             );
 
             //variable not found
-            if (elementIndex === -1) {
+            if (!identifierValue) {
                 throw new Error("Variable not defined");
             }
 
-            if (
-                detectedVariableStatements[elementIndex].variableType ===
-                "const"
-            ) {
+            if (identifierValue.variableType === "const") {
                 throw new Error("Can't redefine a constant");
             }
 
@@ -89,7 +80,7 @@ export function editVariables(
                 nodeExpression.operator
             );
 
-            const value = detectedVariableStatements[elementIndex].value;
+            const newVariableValue = identifierValue.variableValue;
 
             const expressionLocation = getNodePosition(
                 sourceFile,
@@ -102,21 +93,15 @@ export function editVariables(
             );
 
             //value has to be a number because you can't do True++
-            if (operation !== undefined && typeof value === "number") {
-                detectedVariableStatements.push({
-                    name: detectedVariableStatements[elementIndex].name,
-
-                    value: operation(value),
-
+            if (operation && typeof newVariableValue === "number") {
+                return {
+                    name: nodeExpression.operand.getText(),
+                    value: operation(newVariableValue),
+                    variableType: identifierValue.variableType,
                     text: node.getText(),
-
-                    variableType:
-                        detectedVariableStatements[elementIndex].variableType,
-
                     expressionLocation,
                     identifierLocation,
-                });
-                return detectedVariableStatements;
+                };
             } else {
                 throw new Error("Operation is Undefined");
             }

@@ -57,4 +57,6 @@ export const booleanOperations = new Map<
         ts.SyntaxKind.ExclamationEqualsEqualsToken,
         (a: boolean, b: boolean) => a !== b,
     ],
+    [ts.SyntaxKind.AmpersandAmpersandToken, (a: boolean, b: boolean) => a && b],
+    [ts.SyntaxKind.BarBarToken, (a: boolean, b: boolean) => a || b],
 ]);
