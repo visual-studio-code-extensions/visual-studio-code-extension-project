@@ -2,7 +2,7 @@
     "name": "typescript-static-analysis",
     "displayName": "Typescript Static Analysis",
     "description": "Typescript extension that shows value of variables through static analysis, for example defining var x = 5 + 6 will show 11 when you hover over the variable name. Currently support : boolean, numbers ",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "license": "unlicense",
     "engines": {
         "vscode": "^1.32.0"
@@ -69,8 +69,6 @@
         "compile-web": "webpack --config ./build/web-extension.webpack.config.js",
         "watch-web": "webpack --watch --config ./build/web-extension.webpack.config.js",
         "package-web": "webpack --mode production --devtool hidden-source-map --config ./build/web-extension.webpack.config.js",
-
-        
         "prettier": "./node_modules/.bin/prettier --config ./config/prettier.json --write \"@(src|test|scripts)/**/*.@(ts|js|md|html|css|json)\"",
         "prettier-check": "./node_modules/.bin/prettier --config ./config/prettier.json --check \"@(src|test)/**/*.@(ts|js|md|html|css|json)\"",
         "eslint": "./node_modules/.bin/eslint --config ./config/eslint.json --no-eslintrc \"@(src|test|scripts)/**/*.@(ts|js)\"",
@@ -89,21 +87,21 @@
         "typescript": "4.8.2"
     },
     "devDependencies": {
-        "vsce": "^2.7.0",
         "@types/jest": "^28.1.1",
         "@types/node": "^16.11.7",
         "@types/vscode": "^1.32.0",
+        "@types/webpack-env": "^1.18.0",
         "@typescript-eslint/eslint-plugin": "^5.30.0",
         "@typescript-eslint/parser": "^5.30.0",
         "eslint": "^8.13.0",
         "jest": "^28.1.3",
         "prettier": "^2.7.1",
+        "process": "^0.11.10",
         "ts-jest": "^28.0.5",
-        "ts-node": "^10.9.1",
-        "webpack": "^5.7.4",
-        "webpack-cli": "^4.10.0",
         "ts-loader": "^9.2.2",
-        "@types/webpack-env": "^1.18.0",
-        "process": "^0.11.10"
+        "ts-node": "^10.9.1",
+        "vsce": "^2.11.0",
+        "webpack": "^5.7.4",
+        "webpack-cli": "^4.10.0"
     }
 }
