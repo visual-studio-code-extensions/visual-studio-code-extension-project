@@ -1,0 +1,70 @@
+# Workflow to publish the extension to the store
+# This workflow will do a clean install of node dependencies, build the source code, run tests, and publish
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+# Manually Run from: https://github.com/wandyezj/vscode-poems/actions/workflows/publish.yml
+
+name: Publish
+
+on:
+  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
+  workflow_dispatch:
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onworkflow_callinputs
+    inputs:
+      publish:
+        description: 'Publish Extension'
+        type: boolean
+        default: false
+        required: false
+jobs:
+  build:
+    # Match Development Operating System
+    runs-on: ubuntu-latest
+    environment: Publish
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        # Match Development Node Version
+        node-version: '16.x'
+
+    # Tool Versions
+    - name: Node Version
+      run: node --version
+    - name: NPM Version
+      run: npm --version
+
+    - name: Clean Install
+      run: npm ci
+
+    # Check Environment
+    - name: Check
+      env:
+        BRANCH_NAME: ${{ github.ref }}
+      run: npm run check-environment --if-present
+
+    # Check Code
+    # Style Check ensures that code is consistently styled
+    - name: Style Check
+      run: npm run style-check
+    - name: Lint Check
+      run: npm run lint
+
+    - name: Clean
+      run: npm run clean
+    - name: Compile
+      run: npm run compile
+    - name: Test
+      run: npm test
+
+    # Build
+    - name: Package
+      run: npm run vsce-package
+
+    # Publish packaged package if publish is checked.
+    - name: Publish
+      run: npm run vsce-publish
+      if: ${{ inputs.publish }}
+      env:
+        VSCE_PAT: ${{ secrets.VSCE_PAT }}
