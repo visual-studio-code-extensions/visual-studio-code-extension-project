@@ -22,6 +22,28 @@ describe("basic", () => {
     });
 });
 
+// test("Multiple assignment at the same time expression", () => {
+//     const code = "const x :number, y : number= 2 + 5 + 2;";
+
+//     const actual = analyzeCode(code).variableStatementAnalysis;
+
+//     const expected = [
+//         {
+//             name: "x",
+//             text: "const x :number, y : number= 2 + 5 + 2;",
+//             variableType: "const" as const,
+//             value: 9,
+//         },
+//         {
+//             name: "y",
+//             text: "const x :number, y : number= 2 + 5 + 2;",
+//             variableType: "const" as const,
+//             value: 9,
+//         },
+//     ];
+//     expectSubset(actual, expected);
+// });
+
 test("single boolean expression", () => {
     const code = "const x : boolean = true;";
 
@@ -31,6 +53,66 @@ test("single boolean expression", () => {
         {
             name: "x",
             text: "const x : boolean = true;",
+            variableType: "const" as const,
+            value: true,
+        },
+    ];
+    expectSubset(actual, expected);
+});
+
+test("single string expression", () => {
+    const code = 'const x : string = "Hello";';
+
+    const actual = analyzeCode(code).variableStatementAnalysis;
+
+    const expected = [
+        {
+            name: "x",
+            text: `const x : string = "Hello";`,
+            variableType: "const" as const,
+            value: "Hello",
+        },
+    ];
+    expectSubset(actual, expected);
+});
+
+test("multiple string expressions", () => {
+    const code = `const a : string = "I love ";
+                    const b : string = "Typescript";
+                    const c : string = "I love " + "Typescript";
+                    const d : string = a + b;
+                    const e : boolean = (c === d);`;
+
+    const actual = analyzeCode(code).variableStatementAnalysis;
+
+    const expected = [
+        {
+            name: "a",
+            text: `const a : string = "I love ";`,
+            variableType: "const" as const,
+            value: "I love ",
+        },
+        {
+            name: "b",
+            text: `const b : string = "Typescript";`,
+            variableType: "const" as const,
+            value: "Typescript",
+        },
+        {
+            name: "c",
+            text: `const c : string = "I love " + "Typescript";`,
+            variableType: "const" as const,
+            value: "I love Typescript",
+        },
+        {
+            name: "d",
+            text: `const d : string = a + b;`,
+            variableType: "const" as const,
+            value: "I love Typescript",
+        },
+        {
+            name: "e",
+            text: `const e : boolean = (c === d);`,
             variableType: "const" as const,
             value: true,
         },
@@ -312,171 +394,6 @@ test("simple assignment", () => {
 
     expectSubset(actual, expected);
 });
-
-// test("multi assignment", () => {
-//     const code = `{
-//         let y = 5;
-//         {
-//         let shadow = 1;
-//             if (true) {
-//                 shadow = y;
-//                 a = shadow;
-//             }
-//         }
-//     }`;
-
-//     const expected = [
-//         {
-//             localVariables: [
-//                 {
-//                     name: "y",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [],
-//         },
-//         {
-//             localVariables: [
-//                 {
-//                     name: "shadow",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [],
-//         },
-//         {
-//             localVariables: [
-//                 {
-//                     name: "shadow",
-//                     shadows: true,
-//                 },
-//                 {
-//                     name: "a",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [
-//                 {
-//                     block: 1,
-//                     name: "y",
-//                 },
-//                 {
-//                     block: 2,
-//                     name: "shadow",
-//                 },
-//             ],
-//         },
-//     ];
-
-//     const actual = analyzeCode(code).blockAnalysis;
-//     expect(actual).toStrictEqual(expected);
-//     //expectSubset(actual, expected);
-// });
-
-// test("nested if statements", () => {
-//     const code = `
-//     {
-//         const a = 1;
-//         const b = 2;
-//         const c = 3
-//         if(true){
-//             d = 2;
-//             e = a;
-//         } else if(false) {
-//             f = a;
-//             if(true) {
-//                 g = b;
-//             }
-//         } else {
-//             if(true) {
-//                 h = c;
-//             }
-//         }
-//     }`;
-
-//     const expected = [
-//         {
-//             localVariables: [
-//                 {
-//                     name: "a",
-//                     shadows: false,
-//                 },
-//                 {
-//                     name: "b",
-//                     shadows: false,
-//                 },
-//                 {
-//                     name: "c",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [],
-//         },
-//         {
-//             localVariables: [
-//                 {
-//                     name: "d",
-//                     shadows: false,
-//                 },
-//                 {
-//                     name: "e",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [
-//                 {
-//                     block: 1,
-//                     name: "a",
-//                 },
-//             ],
-//         },
-//         {
-//             localVariables: [
-//                 {
-//                     name: "f",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [
-//                 {
-//                     block: 1,
-//                     name: "a",
-//                 },
-//             ],
-//         },
-//         {
-//             localVariables: [
-//                 {
-//                     name: "g",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [
-//                 {
-//                     block: 1,
-//                     name: "b",
-//                 },
-//             ],
-//         },
-//         {
-//             localVariables: [
-//                 {
-//                     name: "h",
-//                     shadows: false,
-//                 },
-//             ],
-//             referencedVariables: [
-//                 {
-//                     block: 1,
-//                     name: "c",
-//                 },
-//             ],
-//         },
-//     ];
-
-//     const actual = analyzeCode(code).blockAnalysis;
-//     expect(actual).toStrictEqual(expected);
-// });
 
 test("detectedVariable Scoping", () => {
     const code = `

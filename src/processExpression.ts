@@ -4,18 +4,23 @@ import {
     numberBooleanOperations,
     booleanOperations,
     preFixUnaryExpression,
+    stringOperations,
+    stringBooleanOperations,
 } from "./operations";
-import { MapStack } from "./mapStack";
+import { VariableValues, MapStack } from "./mapStack";
 
 //Check types of expression and choose operation accordingly
 function applyBinaryOperation(
     opToken: ts.BinaryExpression["operatorToken"],
-    left: number | boolean,
-    right: number | boolean
+    left: number | boolean | string,
+    right: number | boolean | string
 ) {
     const regularOperation = regularOperations.get(opToken.kind);
     const numberBooleanOperation = numberBooleanOperations.get(opToken.kind);
     const booleanOperation = booleanOperations.get(opToken.kind);
+
+    const stringOperation = stringOperations.get(opToken.kind);
+    const stringBooleanOperation = stringBooleanOperations.get(opToken.kind);
 
     //Check if its a number expression
     if (typeof left === "number" && typeof right === "number") {
@@ -35,6 +40,14 @@ function applyBinaryOperation(
         } else {
             throw new Error("Can't process this Binary Expression");
         }
+    } else if (typeof left === "string" && typeof right === "string") {
+        if (stringOperation) {
+            return stringOperation(left, right);
+        } else if (stringBooleanOperation) {
+            return stringBooleanOperation(left, right);
+        } else {
+            throw new Error("Can't process this Binary Expression");
+        }
     } else {
         return undefined;
     }
@@ -47,9 +60,11 @@ export function processExpression(
         | ts.Identifier
         | ts.ParenthesizedExpression
         | ts.PrefixUnaryExpression
+        | ts.PropertyAccessExpression
+        | ts.CallExpression
         | undefined,
     mapStack: MapStack
-): number | boolean | undefined {
+): VariableValues | undefined {
     if (!node) {
         throw new Error("Expression is undefined");
     }
@@ -63,9 +78,9 @@ export function processExpression(
             return applyBinaryOperation(node.operatorToken, left, right);
         }
         return undefined;
-    } else if (ts.isNumericLiteral(node)) {
-        //in case variables were defined just with one numeric literal for example: const x = 2;
-        return parseFloat(node.getText());
+        // } else if (ts.isPropertyAccessExpression(node)) {
+        //     const expression = processExpression(node.expression, mapStack);
+        //     const name = processExpression(node.name, mapStack);
     } else if (ts.isIdentifier(node)) {
         const identifierValue = mapStack.get(node.getText());
 
@@ -123,10 +138,16 @@ export function processExpression(
                 return undefined;
             }
         }
+    } else if (ts.isNumericLiteral(node)) {
+        //in case variables were defined just with one numeric literal for example: const x = 2;
+        return parseFloat(node.getText());
     } else if (node.kind === ts.SyntaxKind.TrueKeyword) {
         return true;
     } else if (node.kind === ts.SyntaxKind.FalseKeyword) {
         return false;
+    } else if (ts.isStringLiteral(node)) {
+        // Using .getText() wraps it in another string, node.text is the correct value.
+        return node.text;
     } else {
         throw new Error("Cannot process this expression: " + node.getText());
     }

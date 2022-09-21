@@ -38,3 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Fixed an issue where it was not picking the right variable
+
+## [1.1.0] - 2022-10-09
+
+### Added
+
+- String operations support

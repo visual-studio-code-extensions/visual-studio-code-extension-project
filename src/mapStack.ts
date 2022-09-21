@@ -1,6 +1,6 @@
 type Block = Map<string, KeyValue>;
 export type VariableTypes = "let" | "const";
-export type VariableValues = number | boolean;
+export type VariableValues = number | boolean | string;
 interface InterfaceStack {
     set(name: string, value: KeyValue): void;
     get(name: string): VariableValues | undefined;
