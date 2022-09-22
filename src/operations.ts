@@ -87,55 +87,89 @@ export const callExpressionStringOperations0Args = new Map<
 >([
     ["toLocaleLowerCase", (a: string) => a.toLocaleLowerCase()],
     ["toLocaleUpperCase", (a: string) => a.toLocaleUpperCase()],
+    ["toLowerCase", (a: string) => a.toLowerCase()],
+    ["toUpperCase", (a: string) => a.toUpperCase()],
     ["trim", (a: string) => a.trim()],
     ["trimStart", (a: string) => a.trimStart()],
     ["trimEnd", (a: string) => a.trimEnd()],
     ["valueOf", (a: string) => a.valueOf()],
     ["toString", (a: string) => a.toString()],
+    ["valueOf", (a: string) => a.valueOf()],
 ]);
 
-export const callExpressionStringReturnsNumberOperations1stringArg = new Map<
+export const callExpressionStringReturnsNumberOperations1StringArg = new Map<
     string,
     (a: string, b: string) => number
 >([
-    [
-        //indexOf(substr, [start]):
-        "indexOf",
-        (a: string, b: string) => a.indexOf(b),
-    ],
-    [
-        //lastIndexOf(substr, [start]):
-        "lastIndexOf",
-        (a: string, b: string) => a.lastIndexOf(b),
-    ],
+    ["indexOf", (a: string, b: string) => a.indexOf(b)],
+    ["lastIndexOf", (a: string, b: string) => a.lastIndexOf(b)],
 ]);
 
-export const callExpressionStringReturnsStringOperations1numberArg = new Map<
+//TODO: split
+export const callExpressionStringReturnsStringOperations1NumberArg = new Map<
     string,
     (a: string, b: number) => string | undefined
 >([
-    [
-        //substring(start, [end]):
-        "substring",
-        (a: string, b: number) => a.substring(b),
-    ],
-    [
-        //slice(start, [end]):
-        "slice",
-        (a: string, b: number) => a.slice(b),
-    ],
-    [
-        //substring(start, [end]):
-        "at",
-        (a: string, b: number) => a.at(b),
-    ],
+    ["substring", (a: string, b: number) => a.substring(b)],
+    ["slice", (a: string, b: number) => a.slice(b)],
+    ["at", (a: string, b: number) => a.at(b)],
+    ["charAt", (a: string, b: number) => a.charAt(b)],
+    ["padEnd", (a: string, b: number) => a.padEnd(b)],
+    ["padStart", (a: string, b: number) => a.padStart(b)],
+    ["repeat", (a: string, b: number) => a.repeat(b)],
 ]);
 
-export const callExpressionStringReturnsBooleanOperations1stringArg = new Map<
+export const callExpressionStringReturnsBooleanOperations1StringArg = new Map<
     string,
     (a: string, b: string) => boolean
 >([
     ["includes", (a: string, b: string) => a.includes(b)],
     ["startsWith", (a: string, b: string) => a.startsWith(b)],
     ["endsWith", (a: string, b: string) => a.endsWith(b)],
+]);
+
+export const callExpressionStringReturnsBooleanOperations1String1NumberArg =
+    new Map<string, (a: string, b: string, c: number) => boolean>([
+        ["endsWith", (a: string, b: string, c: number) => a.endsWith(b, c)],
+        ["startsWith", (a: string, b: string, c: number) => a.startsWith(b, c)],
+        ["includes", (a: string, b: string, c: number) => a.includes(b, c)],
+    ]);
+
+export const callExpressionStringReturnsNumberOperations1NumberArg = new Map<
+    string,
+    (a: string, b: number) => number | undefined
+>([
+    ["charCodeAt", (a: string, b: number) => a.charCodeAt(b)],
+    ["codePointAt", (a: string, b: number) => a.codePointAt(b)],
+]);
+
+export const callExpressionStringReturnsStringOperations2StringArg = new Map<
+    string,
+    (a: string, b: string, c: string) => string
+>([
+    ["concat", (a: string, b: string, c: string) => a.concat(b, c)],
+    ["replace", (a: string, b: string, c: string) => a.replace(b, c)],
+]);
+
+export const callExpressionStringReturnsNumberOperations1String1NumberArg =
+    new Map<string, (a: string, b: string, c: number) => number>([
+        ["indexOf", (a: string, b: string, c: number) => a.indexOf(b, c)],
+        [
+            "lastIndexOf",
+            (a: string, b: string, c: number) => a.lastIndexOf(b, c),
+        ],
+    ]);
+
+export const callExpressionStringReturnsStringOperations1String1NumberArg =
+    new Map<string, (a: string, b: string, c: number) => string>([
+        ["indexOf", (a: string, b: string, c: number) => a.padEnd(c, b)],
+        ["indexStart", (a: string, b: string, c: number) => a.padStart(c, b)],
+    ]);
+
+export const callExpressionStringReturnsStringOperations2NumberArg = new Map<
+    string,
+    (a: string, b: number, c: number) => string
+>([
+    ["slice", (a: string, b: number, c: number) => a.slice(b, c)],
+    ["substring", (a: string, b: number, c: number) => a.substring(b, c)],
 ]);
