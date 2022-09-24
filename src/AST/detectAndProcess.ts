@@ -1,6 +1,6 @@
 import ts from "typescript";
-import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
-import { getNodePosition } from "./getNodePosition";
+import { VariableStatementAnalysis } from "../Objects/VariableStatementAnalysis";
+import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { MapStack } from "./mapStack";
 import { processExpression } from "./processExpression";
 import { editVariables } from "./editVariable";

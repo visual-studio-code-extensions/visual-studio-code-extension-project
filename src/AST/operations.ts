@@ -94,7 +94,7 @@ export const callExpressionStringOperations0Args = new Map<
     ["trimEnd", (a: string) => a.trimEnd()],
     ["valueOf", (a: string) => a.valueOf()],
     ["toString", (a: string) => a.toString()],
-    ["valueOf", (a: string) => a.valueOf()],
+    //["valueOf", (a: string) => a.valueOf()],
 ]);
 
 export const callExpressionStringReturnsNumberOperations1StringArg = new Map<
@@ -172,4 +172,12 @@ export const callExpressionStringReturnsStringOperations2NumberArg = new Map<
 >([
     ["slice", (a: string, b: number, c: number) => a.slice(b, c)],
     ["substring", (a: string, b: number, c: number) => a.substring(b, c)],
+]);
+
+export const callExpressionStringReturnsStringOperations1StringArg = new Map<
+    string,
+    (a: string, b: string) => string
+>([
+    ["toLocaleLowerCase", (a: string, b: string) => a.toLocaleLowerCase(b)],
+    ["toLocaleUpperCase", (a: string, b: string) => a.toLocaleUpperCase(b)],
 ]);

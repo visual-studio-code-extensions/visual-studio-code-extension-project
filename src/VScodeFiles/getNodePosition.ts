@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import { CodeLocation } from "./CodeLocation";
+import { CodeLocation } from "../Objects/CodeLocation";
 
 export function getNodePosition(
     sourceFile: ts.SourceFile,

@@ -1,4 +1,4 @@
-import { analyzeCode } from "./analyzeCode";
+import { analyzeCode } from "../AST/analyzeCode";
 import * as vscode from "vscode";
 
 export function getDecorations(text: string): vscode.DecorationOptions[] {

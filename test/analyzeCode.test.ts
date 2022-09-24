@@ -1,4 +1,4 @@
-import { analyzeCode } from "../src/analyzeCode";
+import { analyzeCode } from "../src/AST/analyzeCode";
 
 import { expectSubset } from "./expectSubset";
 
@@ -55,6 +55,60 @@ test("single boolean expression", () => {
             text: "const x : boolean = true;",
             variableType: "const" as const,
             value: true,
+        },
+    ];
+    expectSubset(actual, expected);
+});
+
+test("Property Access without a call expression", () => {
+    const code = `const x : string = "I love Typescript";
+                    const y : number = x.toLowerCase().length;`;
+
+    const actual = analyzeCode(code).variableStatementAnalysis;
+
+    const expected = [
+        {
+            name: "x",
+            text: `const x : string = "I love Typescript";`,
+            variableType: "const" as const,
+            value: "I love Typescript",
+        },
+        {
+            name: "y",
+            text: `const y : number = x.toLowerCase().length;`,
+            variableType: "const" as const,
+            value: 17,
+        },
+    ];
+    expectSubset(actual, expected);
+});
+
+test("Multiple call expressions", () => {
+    const code = `const a : string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                const b = a.toLowerCase();
+                const c = a.toLowerCase().toUpperCase();
+                `;
+
+    const actual = analyzeCode(code).variableStatementAnalysis;
+
+    const expected = [
+        {
+            name: "a",
+            text: `const a : string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";`,
+            variableType: "const" as const,
+            value: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        },
+        {
+            name: "b",
+            text: `const b = a.toLowerCase();`,
+            variableType: "const" as const,
+            value: "abcdefghijklmnopqrstuvwxyz",
+        },
+        {
+            name: "c",
+            text: `const c = a.toLowerCase().toUpperCase();`,
+            variableType: "const" as const,
+            value: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
         },
     ];
     expectSubset(actual, expected);

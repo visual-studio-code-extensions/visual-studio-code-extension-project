@@ -1,9 +1,9 @@
 import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
-import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
+import { VariableStatementAnalysis } from "../Objects/VariableStatementAnalysis";
 import { MapStack } from "./mapStack";
-import { CodeAnalysis } from "./CodeAnalysis";
-import { BlockAnalysis } from "./BlockAnalysis";
+import { CodeAnalysis } from "../Objects/CodeAnalysis";
+import { BlockAnalysis } from "../Objects/BlockAnalysis";
 import { detectAndProcess } from "./detectAndProcess";
 /**
  * visit top level nodes and retrieve all VariableStatements.

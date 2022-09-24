@@ -1,5 +1,5 @@
 import { CodeLocation } from "./CodeLocation";
-import { VariableTypes, VariableValues } from "./mapStack";
+import { VariableTypes, VariableValues } from "../AST/mapStack";
 
 export interface VariableStatementAnalysis {
     name: string;

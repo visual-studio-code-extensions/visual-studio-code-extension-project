@@ -6,6 +6,8 @@ import {
     preFixUnaryExpression,
     stringOperations,
     stringBooleanOperations,
+    lengthOperation,
+    callExpressionStringOperations0Args,
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
 
@@ -54,15 +56,7 @@ function applyBinaryOperation(
 }
 
 export function processExpression(
-    node:
-        | ts.Expression
-        | ts.NumericLiteral
-        | ts.Identifier
-        | ts.ParenthesizedExpression
-        | ts.PrefixUnaryExpression
-        | ts.PropertyAccessExpression
-        | ts.CallExpression
-        | undefined,
+    node: ts.Expression | ts.NumericLiteral | ts.Identifier | undefined,
     mapStack: MapStack
 ): VariableValues | undefined {
     if (!node) {
@@ -74,13 +68,39 @@ export function processExpression(
         const left = processExpression(node.left, mapStack);
         const right = processExpression(node.right, mapStack);
 
-        if (left && right) {
+        if (left && right)
             return applyBinaryOperation(node.operatorToken, left, right);
-        }
+
         return undefined;
-        // } else if (ts.isPropertyAccessExpression(node)) {
-        //     const expression = processExpression(node.expression, mapStack);
-        //     const name = processExpression(node.name, mapStack);
+    } else if (ts.isCallExpression(node)) {
+        const expression = processExpression(node.expression, mapStack);
+        //const args = node.arguments;
+        if (expression && ts.isPropertyAccessExpression(node.expression))
+            return applyCallExpression(
+                node.expression.name.getText(),
+                expression
+            );
+
+        return undefined;
+
+        //return applyCallExpression(node.expression = new type(arguments);, identifierValue);
+    } else if (ts.isPropertyAccessExpression(node)) {
+        const identifierValue = processExpression(node.expression, mapStack);
+        if (!identifierValue) {
+            throw new Error(
+                "Identifier" +
+                    node.getText() +
+                    " cannot be found or undefined, please define a variable before using it"
+            );
+        }
+        if (typeof identifierValue !== "string")
+            throw new Error("Can only process string call expression");
+
+        if (!ts.isCallExpression(node.parent)) {
+            return applyCallExpression(node.name.getText(), identifierValue);
+        }
+
+        return identifierValue;
     } else if (ts.isIdentifier(node)) {
         const identifierValue = mapStack.get(node.getText());
 
@@ -112,9 +132,9 @@ export function processExpression(
             const operation = preFixUnaryExpression.get(node.operator);
 
             //Apply the correct operation
-            if (operation && typeof identifierValue === "number") {
+            if (operation && typeof identifierValue === "number")
                 return operation(identifierValue);
-            }
+
             return undefined;
         } else {
             if (
@@ -151,4 +171,22 @@ export function processExpression(
     } else {
         throw new Error("Cannot process this expression: " + node.getText());
     }
+}
+
+function applyCallExpression(
+    functionName: string,
+    objectValue: VariableValues
+): VariableValues | undefined {
+    if (typeof objectValue === "string") {
+        const lengthOp = lengthOperation.get(functionName);
+        const stringOp0arg =
+            callExpressionStringOperations0Args.get(functionName);
+        if (lengthOp) {
+            return lengthOp(objectValue);
+        } else if (stringOp0arg) {
+            return stringOp0arg(objectValue);
+        }
+    }
+
+    return undefined;
 }
