@@ -7,9 +7,14 @@ import {
     stringOperations,
     stringBooleanOperations,
     lengthOperation,
-    callExpressionStringOperations0Args,
+    StringOperations0Args,
+    StringReturnsBooleanOperations1StringArg,
+    StringReturnsStringOperations2StringArg,
+    StringReturnsNumberOperations1String1NumberArg,
+    StringReturnsStringOperations2NumberArg,
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
+import exp from "constants";
 
 //Check types of expression and choose operation accordingly
 function applyBinaryOperation(
@@ -75,11 +80,21 @@ export function processExpression(
     } else if (ts.isCallExpression(node)) {
         const expression = processExpression(node.expression, mapStack);
         //const args = node.arguments;
-        if (expression && ts.isPropertyAccessExpression(node.expression))
-            return applyCallExpression(
-                node.expression.name.getText(),
-                expression
-            );
+        if (expression && ts.isPropertyAccessExpression(node.expression)) {
+            const args = node.arguments.map((argexpression) => {
+                return processExpression(argexpression, mapStack);
+            });
+
+            if (!args) {
+                return applyCallExpression(
+                    node.expression.name.getText(),
+                    expression,
+                    args
+                );
+            } else {
+                throw new Error(`Argument is undefined`);
+            }
+        }
 
         return undefined;
 
@@ -173,20 +188,52 @@ export function processExpression(
     }
 }
 
-function applyCallExpression(
+const applyCallExpression = (
     functionName: string,
-    objectValue: VariableValues
-): VariableValues | undefined {
+    objectValue: VariableValues,
+    args: string[] = []
+): VariableValues | undefined => {
     if (typeof objectValue === "string") {
         const lengthOp = lengthOperation.get(functionName);
-        const stringOp0arg =
-            callExpressionStringOperations0Args.get(functionName);
+        const stringOp0arg = StringOperations0Args.get(functionName);
+        const boolean1string =
+            StringReturnsBooleanOperations1StringArg.get(functionName);
+        const String2String =
+            StringReturnsStringOperations2StringArg.get(functionName);
+        const number1String1Number =
+            StringReturnsNumberOperations1String1NumberArg.get(functionName);
+        const string2Number =
+            StringReturnsStringOperations2NumberArg.get(functionName);
+        const argsCount = args.length;
         if (lengthOp) {
             return lengthOp(objectValue);
-        } else if (stringOp0arg) {
+        } else if (stringOp0arg && argsCount === 0) {
             return stringOp0arg(objectValue);
+        } else if (boolean1string && argsCount === 1) {
+            boolean1string(objectValue, args[0]);
+        }
+        if (argsCount === 2) {
+            if (
+                String2String &&
+                typeof args[0] === "string" &&
+                typeof args[1] === "string"
+            ) {
+                String2String(objectValue, args[0], args[1]);
+            } else if (
+                number1String1Number &&
+                typeof args[0] === "string" &&
+                typeof args[1] === "number"
+            ) {
+                number1String1Number(objectValue, args[0], args[1]);
+            } else if (
+                string2Number &&
+                typeof args[0] === "number" &&
+                typeof args[1] === "number"
+            ) {
+                string2Number(objectValue, args[0], args[1]);
+            }
         }
     }
 
     return undefined;
-}
+};
