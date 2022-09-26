@@ -12,6 +12,7 @@ import {
     StringReturnsStringOperations2StringArg,
     StringReturnsNumberOperations1String1NumberArg,
     StringReturnsStringOperations2NumberArg,
+    StringReturnsStringOperations1NumberArg
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
 import exp from "constants";
@@ -82,28 +83,30 @@ export function processExpression(
         //const args = node.arguments;
         if (expression && ts.isPropertyAccessExpression(node.expression)) {
             const args = node.arguments.map((argexpression) => {
-                return processExpression(argexpression, mapStack);
+                const result = processExpression(argexpression, mapStack);
+                if(!result)
+                {
+                    throw new Error("Argument is undefined " + argexpression.getText);
+                }
+                return result;
             });
 
-            if (!args) {
-                return applyCallExpression(
-                    node.expression.name.getText(),
-                    expression,
-                    args
-                );
-            } else {
-                throw new Error(`Argument is undefined`);
-            }
+            const returnValue = applyCallExpression(
+                node.expression.name.getText(),
+                expression,
+                args
+            );
+            console.log(returnValue);
+            return returnValue;
         }
 
         return undefined;
 
-        //return applyCallExpression(node.expression = new type(arguments);, identifierValue);
     } else if (ts.isPropertyAccessExpression(node)) {
         const identifierValue = processExpression(node.expression, mapStack);
         if (!identifierValue) {
             throw new Error(
-                "Identifier" +
+                "Identifier " +
                     node.getText() +
                     " cannot be found or undefined, please define a variable before using it"
             );
@@ -191,7 +194,7 @@ export function processExpression(
 const applyCallExpression = (
     functionName: string,
     objectValue: VariableValues,
-    args: string[] = []
+    args: VariableValues[] = []
 ): VariableValues | undefined => {
     if (typeof objectValue === "string") {
         const lengthOp = lengthOperation.get(functionName);
@@ -204,33 +207,36 @@ const applyCallExpression = (
             StringReturnsNumberOperations1String1NumberArg.get(functionName);
         const string2Number =
             StringReturnsStringOperations2NumberArg.get(functionName);
+        const string1Number = StringReturnsStringOperations1NumberArg.get(functionName);
         const argsCount = args.length;
         if (lengthOp) {
             return lengthOp(objectValue);
         } else if (stringOp0arg && argsCount === 0) {
             return stringOp0arg(objectValue);
-        } else if (boolean1string && argsCount === 1) {
-            boolean1string(objectValue, args[0]);
-        }
-        if (argsCount === 2) {
+        } else if (boolean1string && argsCount === 1 && typeof args[0] === "string") {
+            return boolean1string(objectValue, args[0]);
+        } else if (string1Number && argsCount === 1 && typeof args[0] === "number") {
+            return string1Number(objectValue, args[0]);
+        } 
+        else if (argsCount === 2) {
             if (
                 String2String &&
                 typeof args[0] === "string" &&
                 typeof args[1] === "string"
             ) {
-                String2String(objectValue, args[0], args[1]);
+                return String2String(objectValue, args[0], args[1]);
             } else if (
                 number1String1Number &&
                 typeof args[0] === "string" &&
                 typeof args[1] === "number"
             ) {
-                number1String1Number(objectValue, args[0], args[1]);
+                return number1String1Number(objectValue, args[0], args[1]);
             } else if (
                 string2Number &&
                 typeof args[0] === "number" &&
                 typeof args[1] === "number"
             ) {
-                string2Number(objectValue, args[0], args[1]);
+                return string2Number(objectValue, args[0], args[1]);
             }
         }
     }

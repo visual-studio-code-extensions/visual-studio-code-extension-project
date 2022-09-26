@@ -84,9 +84,25 @@ test("Property Access without a call expression", () => {
 });
 
 test("Multiple call expressions", () => {
-    const code = `const a : string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const code = 
+                `const a : string = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                const aa = '   Hello world!   ';
+                const index = -4;
                 const b = a.toLowerCase();
                 const c = a.toLowerCase().toUpperCase();
+                const d = a.substring(2);
+                const e = aa.trim();
+                const f = aa.trimStart();
+                const g = aa.trimEnd();
+                const h = a.slice(-2);
+                const i = a.slice();
+                const j = a.at(index);
+                const k = a.charAt(7);
+                const l = a.padEnd(30, ',');
+                const m = a.padStart(30, ',');
+                const n = a.repeat(2);
+                const o = a.charCodeAt(4);
+                const p = 
                 `;
 
     const actual = analyzeCode(code).variableStatementAnalysis;
@@ -109,6 +125,12 @@ test("Multiple call expressions", () => {
             text: `const c = a.toLowerCase().toUpperCase();`,
             variableType: "const" as const,
             value: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        },
+        {
+            name: "d",
+            text: `const d = a.substring(2);`,
+            variableType: "const" as const,
+            value: "CDEFGHIJKLMNOPQRSTUVWXYZ",
         },
     ];
     expectSubset(actual, expected);

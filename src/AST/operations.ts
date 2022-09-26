@@ -89,8 +89,7 @@ export const StringOperations0Args = new Map<string, (a: string) => string>([
     ["trim", (a: string) => a.trim()],
     ["trimStart", (a: string) => a.trimStart()],
     ["trimEnd", (a: string) => a.trimEnd()],
-    ["valueOf", (a: string) => a.valueOf()],
-    ["toString", (a: string) => a.toString()],
+    //["toString", (a: string) => a.toString()],
     ["slice", (a: string) => a.slice()],
 
     //["valueOf", (a: string) => a.valueOf()],
