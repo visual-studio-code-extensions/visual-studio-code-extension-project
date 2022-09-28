@@ -8,14 +8,13 @@ import {
     stringBooleanOperations,
     lengthOperation,
     StringOperations0Args,
-    StringReturnsBooleanOperations1StringArg,
-    StringReturnsStringOperations2StringArg,
-    StringReturnsNumberOperations1String1NumberArg,
-    StringReturnsStringOperations2NumberArg,
-    StringReturnsStringOperations1NumberArg
+    StringOperations1StringArg,
+    StringOperations2StringArg,
+    StringOperations1String1NumberArg,
+    StringOperations2NumberArg,
+    StringOperations1NumberArg,
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
-import exp from "constants";
 
 //Check types of expression and choose operation accordingly
 function applyBinaryOperation(
@@ -84,9 +83,10 @@ export function processExpression(
         if (expression && ts.isPropertyAccessExpression(node.expression)) {
             const args = node.arguments.map((argexpression) => {
                 const result = processExpression(argexpression, mapStack);
-                if(!result)
-                {
-                    throw new Error("Argument is undefined " + argexpression.getText);
+                if (!result) {
+                    throw new Error(
+                        "Argument is undefined " + argexpression.getText
+                    );
                 }
                 return result;
             });
@@ -96,12 +96,15 @@ export function processExpression(
                 expression,
                 args
             );
+
+            if (returnValue === undefined) {
+                throw new Error("Can't process this call " + node.getText());
+            }
             console.log(returnValue);
             return returnValue;
         }
 
         return undefined;
-
     } else if (ts.isPropertyAccessExpression(node)) {
         const identifierValue = processExpression(node.expression, mapStack);
         if (!identifierValue) {
@@ -115,7 +118,16 @@ export function processExpression(
             throw new Error("Can only process string call expression");
 
         if (!ts.isCallExpression(node.parent)) {
-            return applyCallExpression(node.name.getText(), identifierValue);
+            const returnValue = applyCallExpression(
+                node.name.getText(),
+                identifierValue
+            );
+
+            if (returnValue === undefined) {
+                throw new Error("Can't process this call " + node.getText());
+            }
+
+            return returnValue;
         }
 
         return identifierValue;
@@ -199,38 +211,48 @@ const applyCallExpression = (
     if (typeof objectValue === "string") {
         const lengthOp = lengthOperation.get(functionName);
         const stringOp0arg = StringOperations0Args.get(functionName);
-        const boolean1string =
-            StringReturnsBooleanOperations1StringArg.get(functionName);
-        const String2String =
-            StringReturnsStringOperations2StringArg.get(functionName);
+        const boolean1string = StringOperations1StringArg.get(functionName);
+        const String2String = StringOperations2StringArg.get(functionName);
         const number1String1Number =
-            StringReturnsNumberOperations1String1NumberArg.get(functionName);
-        const string2Number =
-            StringReturnsStringOperations2NumberArg.get(functionName);
-        const string1Number = StringReturnsStringOperations1NumberArg.get(functionName);
+            StringOperations1String1NumberArg.get(functionName);
+        const string2Number = StringOperations2NumberArg.get(functionName);
+        const string1Number = StringOperations1NumberArg.get(functionName);
         const argsCount = args.length;
         if (lengthOp) {
             return lengthOp(objectValue);
         } else if (stringOp0arg && argsCount === 0) {
             return stringOp0arg(objectValue);
-        } else if (boolean1string && argsCount === 1 && typeof args[0] === "string") {
+        } else if (
+            boolean1string &&
+            argsCount === 1 &&
+            typeof args[0] === "string"
+        ) {
             return boolean1string(objectValue, args[0]);
-        } else if (string1Number && argsCount === 1 && typeof args[0] === "number") {
+        } else if (
+            string1Number &&
+            argsCount === 1 &&
+            typeof args[0] === "number"
+        ) {
             return string1Number(objectValue, args[0]);
-        } 
-        else if (argsCount === 2) {
+        } else if (argsCount === 2) {
             if (
                 String2String &&
                 typeof args[0] === "string" &&
                 typeof args[1] === "string"
             ) {
                 return String2String(objectValue, args[0], args[1]);
-            } else if (
-                number1String1Number &&
-                typeof args[0] === "string" &&
-                typeof args[1] === "number"
-            ) {
-                return number1String1Number(objectValue, args[0], args[1]);
+            } else if (number1String1Number) {
+                if (
+                    typeof args[0] === "number" &&
+                    typeof args[1] === "string"
+                ) {
+                    return number1String1Number(objectValue, args[1], args[0]);
+                } else if (
+                    typeof args[0] === "string" &&
+                    typeof args[1] === "number"
+                ) {
+                    return number1String1Number(objectValue, args[0], args[1]);
+                }
             } else if (
                 string2Number &&
                 typeof args[0] === "number" &&

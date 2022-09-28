@@ -96,7 +96,7 @@ export const StringOperations0Args = new Map<string, (a: string) => string>([
 ]);
 
 //TODO: split
-export const StringReturnsStringOperations1NumberArg = new Map<
+export const StringOperations1NumberArg = new Map<
     string,
     (a: string, b: number) => string | undefined | number
 >([
@@ -111,20 +111,20 @@ export const StringReturnsStringOperations1NumberArg = new Map<
     ["codePointAt", (a: string, b: number) => a.codePointAt(b)],
 ]);
 
-export const StringReturnsBooleanOperations1StringArg = new Map<
+export const StringOperations1StringArg = new Map<
     string,
-    (a: string, b: string, c?: number) => boolean | string | number
+    (a: string, b: string) => boolean | string | number
 >([
     ["includes", (a: string, b: string) => a.includes(b)],
     ["startsWith", (a: string, b: string) => a.startsWith(b)],
     ["endsWith", (a: string, b: string) => a.endsWith(b)],
     ["toLocaleLowerCase", (a: string, b: string) => a.toLocaleLowerCase(b)],
     ["toLocaleUpperCase", (a: string, b: string) => a.toLocaleUpperCase(b)],
-    ["indexOf", (a: string, b: string, c?: number) => a.indexOf(b, c)],
-    ["lastIndexOf", (a: string, b: string, c?: number) => a.lastIndexOf(b, c)],
+    ["indexOf", (a: string, b: string) => a.indexOf(b)],
+    ["lastIndexOf", (a: string, b: string) => a.lastIndexOf(b)],
 ]);
 
-export const StringReturnsStringOperations2StringArg = new Map<
+export const StringOperations2StringArg = new Map<
     string,
     (a: string, b: string, c: string) => string
 >([
@@ -132,20 +132,20 @@ export const StringReturnsStringOperations2StringArg = new Map<
     ["replace", (a: string, b: string, c: string) => a.replace(b, c)],
 ]);
 
-export const StringReturnsNumberOperations1String1NumberArg = new Map<
+export const StringOperations1String1NumberArg = new Map<
     string,
     (a: string, b: string, c: number) => number | string | boolean
 >([
     ["indexOf", (a: string, b: string, c: number) => a.indexOf(b, c)],
     ["lastIndexOf", (a: string, b: string, c: number) => a.lastIndexOf(b, c)],
-    ["indexOf", (a: string, b: string, c: number) => a.padEnd(c, b)],
-    ["indexStart", (a: string, b: string, c: number) => a.padStart(c, b)],
+    ["padEnd", (a: string, b: string, c: number) => a.padEnd(c, b)],
+    ["padStart", (a: string, b: string, c: number) => a.padStart(c, b)],
     ["endsWith", (a: string, b: string, c: number) => a.endsWith(b, c)],
     ["startsWith", (a: string, b: string, c: number) => a.startsWith(b, c)],
     ["includes", (a: string, b: string, c: number) => a.includes(b, c)],
 ]);
 
-export const StringReturnsStringOperations2NumberArg = new Map<
+export const StringOperations2NumberArg = new Map<
     string,
     (a: string, b: number, c: number) => string
 >([
