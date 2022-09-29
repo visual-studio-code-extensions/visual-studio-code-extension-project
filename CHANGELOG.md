@@ -50,3 +50,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 .codePointAt, .includes, .startWith/endWith, .indexOf/lastIndexOf, .concat, .replace)
 
 - Replaced annoying VS code error messages to show errors in hover messages.
+
+- 

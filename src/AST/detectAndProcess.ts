@@ -3,7 +3,7 @@ import { VariableStatementAnalysis } from "../Objects/VariableStatementAnalysis"
 import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { MapStack } from "./mapStack";
 import { processExpression } from "./processExpression";
-import { editVariables } from "./editVariable";
+import { expressionStatement } from "./expressionStatement";
 import { errorCollector } from "../Objects/errorCollector";
 
 export function detectAndProcess(
@@ -74,7 +74,7 @@ export function detectAndProcess(
         });
         //Expression statment as in like editing an existing variable
     } else if (ts.isExpressionStatement(node)) {
-        const expressionVariable = editVariables(
+        const expressionVariable = expressionStatement(
             node,
             sourceFile as ts.SourceFile,
             detectedVariableMap,

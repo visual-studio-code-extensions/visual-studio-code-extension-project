@@ -10,6 +10,11 @@ export const regularOperations = new Map<
     [ts.SyntaxKind.AsteriskAsteriskToken, (a: number, b: number) => a ** b],
     [ts.SyntaxKind.SlashToken, (a: number, b: number) => a / b],
     [ts.SyntaxKind.PercentToken, (a: number, b: number) => a % b],
+    [ts.SyntaxKind.PlusEqualsToken, (a: number, b: number) => a += b],
+    [ts.SyntaxKind.MinusEqualsToken, (a: number, b: number) => a -= b],
+    [ts.SyntaxKind.AsteriskEqualsToken, (a: number, b: number) => a *= b],
+    [ts.SyntaxKind.SlashEqualsToken, (a: number, b: number) => a /= b],
+    [ts.SyntaxKind.PercentEqualsToken, (a: number, b: number) => a %= b],
 ]);
 
 export const numberBooleanOperations = new Map<
@@ -64,7 +69,8 @@ export const booleanOperations = new Map<
 export const stringOperations = new Map<
     ts.SyntaxKind,
     (a: string, b: string) => string
->([[ts.SyntaxKind.PlusToken, (a: string, b: string) => a + b]]);
+>([[ts.SyntaxKind.PlusToken, (a: string, b: string) => a + b],
+    [ts.SyntaxKind.PlusEqualsToken, (a: string, b: string) => a += b]]);
 
 export const stringBooleanOperations = new Map<
     ts.SyntaxKind,

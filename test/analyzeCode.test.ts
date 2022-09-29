@@ -681,3 +681,63 @@ test("multi assignment", () => {
 
     expectSubset(actual, expected);
 });
+
+test("Assignment operations", () => {
+    const code = `
+    let a = 2;
+    let b = 15;
+    b+=a;
+    b-=1;
+    b*=3;
+    b/=2;
+    b%=a;
+    const t = b+=4;`;
+
+    const actual = analyzeCode(code).variableStatementAnalysis;
+
+    const expected = [
+        {
+            name: "a",
+            text: "let a = 2;",
+            value: 2,
+        },
+        {
+            name: "b",
+            text: "let b = 15;",
+            value: 15,
+        },
+        {
+            name: "b",
+            text: "b+=a;",
+            value: 2,
+        },
+        {
+            name: "b",
+            text: "b-=1;",
+            value: 1,
+        },
+        {
+            name: "b",
+            text: "b*=3;",
+            value: 3,
+        },
+        {
+            name: "b",
+            text: "b/=2;",
+            value: 2,
+        },
+        {
+            name: "b",
+            text: "b%=a;",
+            value: 2,
+        },
+        {
+            name: "t",
+            text: "const t = b+=4;",
+            value: 6,
+        },
+
+    ];
+    //expect(actual).toStrictEqual(expected);
+    expectSubset(actual, expected);
+});

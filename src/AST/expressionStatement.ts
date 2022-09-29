@@ -6,7 +6,7 @@ import { processExpression } from "./processExpression";
 import { MapStack } from "./mapStack";
 import { errorCollector } from "../Objects/errorCollector";
 
-export function editVariables(
+export function expressionStatement(
     node: ts.ExpressionStatement,
     sourceFile: ts.SourceFile,
     mapStack: MapStack,
@@ -18,7 +18,7 @@ export function editVariables(
         const identifierValue = mapStack.getInformation(
             nodeExpression.left.getText()
         );
-
+            //check parent and apply operation
         const expressionLocation = getNodePosition(sourceFile, nodeExpression);
 
         const identifierLocation = getNodePosition(

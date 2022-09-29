@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 
 export function getDecorations(
     text: string
-): [vscode.DecorationOptions[], vscode.DecorationOptions[]] {
+): vscode.DecorationOptions[][] {
     const { variableStatementAnalysis } = analyzeCode(text);
 
     const decorationsSuccess = variableStatementAnalysis.map((statement) => {
