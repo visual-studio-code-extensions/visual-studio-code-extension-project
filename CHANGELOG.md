@@ -43,4 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- String operations support
+- String operations support(+, ===, !==)
+
+- Common tring methods support (.length, .toLocaleLower/toLocaleUpperCase, .toUpperCase/LowerCase, 
+.trim/trimStart/trimEnd, .slice, .sbustring, .at, .charAt, .padEnd/padStart, .repeat, .charCodeAt 
+.codePointAt, .includes, .startWith/endWith, .indexOf/lastIndexOf, .concat, .replace)
+
+- Replaced annoying VS code error messages to show errors in hover messages.

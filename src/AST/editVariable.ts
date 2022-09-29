@@ -4,11 +4,13 @@ import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { postFixUnaryExpression } from "./operations";
 import { processExpression } from "./processExpression";
 import { MapStack } from "./mapStack";
+import { errorCollector } from "../Objects/errorCollector";
 
 export function editVariables(
     node: ts.ExpressionStatement,
     sourceFile: ts.SourceFile,
-    mapStack: MapStack
+    mapStack: MapStack,
+    errorCollector: errorCollector[]
 ): VariableStatementAnalysis | undefined {
     const nodeExpression = node.expression;
     //calculate binary expression and update its value
@@ -17,31 +19,6 @@ export function editVariables(
             nodeExpression.left.getText()
         );
 
-        //variable not found in the array
-        if (!identifierValue) {
-            throw new Error(
-                "Variable not defined, variable name: " +
-                    nodeExpression.left.getText() +
-                    " for expression: " +
-                    nodeExpression.getFullText()
-            );
-        }
-
-        if (identifierValue.variableType === "const") {
-            throw new Error("Can't redefine a constant");
-        }
-
-        //Get the new variable value
-        const newVariableValue = processExpression(
-            nodeExpression.right,
-            mapStack
-        );
-
-        //Check if undefined and throw an error if so
-        if (newVariableValue === undefined) {
-            throw Error("Value is undefined");
-        }
-
         const expressionLocation = getNodePosition(sourceFile, nodeExpression);
 
         const identifierLocation = getNodePosition(
@@ -49,68 +26,110 @@ export function editVariables(
             nodeExpression.left
         );
 
-        return {
-            name: nodeExpression.left.getText(),
-            value: newVariableValue,
-            variableType: identifierValue.variableType,
-            text: node.getText(),
-            expressionLocation,
-            identifierLocation,
-        };
+        //variable not found in the array
+        if (identifierValue === undefined) {
+            errorCollector.push({
+                errorMessage:
+                    "Can't process variable or its not defined, variable name: " +
+                    nodeExpression.left.getText() +
+                    " for expression: " +
+                    nodeExpression.getFullText(),
+                expressionLocation,
+                identifierLocation,
+            });
+        } else if (identifierValue.variableType === "const") {
+            errorCollector.push({
+                errorMessage: "Can't redefine a constant",
+                expressionLocation,
+                identifierLocation,
+            });
+        } else {
+            //Get the new variable value
+            const newVariableValue = processExpression(
+                nodeExpression.right,
+                mapStack,
+                errorCollector,
+                identifierLocation,
+                expressionLocation
+            );
+
+            if (newVariableValue !== undefined) {
+                return {
+                    name: nodeExpression.left.getText(),
+                    value: newVariableValue,
+                    variableType: identifierValue.variableType,
+                    text: node.getText(),
+                    expressionLocation,
+                    identifierLocation,
+                };
+            }
+        }
     } else if (
         //else if we encounter a i++ or --i case
         ts.isPostfixUnaryExpression(nodeExpression) ||
         ts.isPrefixUnaryExpression(nodeExpression)
     ) {
+        const expressionLocation = getNodePosition(sourceFile, nodeExpression);
+
+        const identifierLocation = getNodePosition(
+            sourceFile,
+            nodeExpression.operand
+        );
         if (ts.isIdentifier(nodeExpression.operand)) {
             const identifierValue = mapStack.getInformation(
                 nodeExpression.operand.getText()
             );
 
             //variable not found
-            if (!identifierValue) {
-                throw new Error("Variable not defined");
-            }
-
-            if (identifierValue.variableType === "const") {
-                throw new Error("Can't redefine a constant");
-            }
-
-            const operation = postFixUnaryExpression.get(
-                nodeExpression.operator
-            );
-
-            const newVariableValue = identifierValue.variableValue;
-
-            const expressionLocation = getNodePosition(
-                sourceFile,
-                nodeExpression
-            );
-
-            const identifierLocation = getNodePosition(
-                sourceFile,
-                nodeExpression.operand
-            );
-
-            //value has to be a number because you can't do True++
-            if (operation && typeof newVariableValue === "number") {
-                return {
-                    name: nodeExpression.operand.getText(),
-                    value: operation(newVariableValue),
-                    variableType: identifierValue.variableType,
-                    text: node.getText(),
+            if (identifierValue === undefined) {
+                errorCollector.push({
+                    errorMessage: "Variable not defined or can't be processed",
                     expressionLocation,
                     identifierLocation,
-                };
+                });
+                return;
+            } else if (identifierValue.variableType === "const") {
+                errorCollector.push({
+                    errorMessage: "Can't redefine a constant",
+                    expressionLocation,
+                    identifierLocation,
+                });
+                return;
             } else {
-                throw new Error("Operation is Undefined");
+                const operation = postFixUnaryExpression.get(
+                    nodeExpression.operator
+                );
+
+                const newVariableValue = identifierValue.variableValue;
+
+                //value has to be a number because you can't do True++
+                if (operation && typeof newVariableValue === "number") {
+                    return {
+                        name: nodeExpression.operand.getText(),
+                        value: operation(newVariableValue),
+                        variableType: identifierValue.variableType,
+                        text: node.getText(),
+                        expressionLocation,
+                        identifierLocation,
+                    };
+                } else {
+                    errorCollector.push({
+                        errorMessage: "Operation is Undefined",
+                        expressionLocation,
+                        identifierLocation,
+                    });
+                    return;
+                }
             }
         } else {
             //Case where --5/5-- or ++7/7++ which can't be calculated
-            throw new Error(
-                "The operand of an increment or decrement operator must be a variable or a property"
-            );
+            errorCollector.push({
+                errorMessage:
+                    "The operand of an increment or decrement operator must be a variable or a property",
+                expressionLocation,
+                identifierLocation,
+            });
         }
     }
-    return undefined;
+    return;
 }

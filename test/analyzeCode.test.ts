@@ -388,8 +388,8 @@ test("Boolean and numbers reassingment/expressions", () => {
     
     t = false;`;
 
-    const actual = analyzeCode(code).variableStatementAnalysis;
-
+    const main = analyzeCode(code);
+    const actual = main.variableStatementAnalysis;
     const expected = [
         {
             name: "x",
@@ -678,6 +678,6 @@ test("multi assignment", () => {
     ];
 
     const actual = analyzeCode(code).variableStatementAnalysis;
-    //expect(actual).toStrictEqual(expected);
+
     expectSubset(actual, expected);
 });

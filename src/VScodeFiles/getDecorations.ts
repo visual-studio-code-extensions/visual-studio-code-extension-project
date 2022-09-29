@@ -1,10 +1,12 @@
 import { analyzeCode } from "../AST/analyzeCode";
 import * as vscode from "vscode";
 
-export function getDecorations(text: string): vscode.DecorationOptions[] {
+export function getDecorations(
+    text: string
+): [vscode.DecorationOptions[], vscode.DecorationOptions[]] {
     const { variableStatementAnalysis } = analyzeCode(text);
 
-    const decorations = variableStatementAnalysis.map((statement) => {
+    const decorationsSuccess = variableStatementAnalysis.map((statement) => {
         const { startLine, startCharacter, endCharacter, endLine } =
             statement.identifierLocation;
 
@@ -25,7 +27,26 @@ export function getDecorations(text: string): vscode.DecorationOptions[] {
         return value;
     });
 
-    // TODO: show for blocks
+    const { errorCollector } = analyzeCode(text);
 
-    return decorations;
+    const decorationsError = errorCollector.map((statement) => {
+        const { startLine, startCharacter, endCharacter, endLine } =
+            statement.identifierLocation;
+
+        const range = new vscode.Range(
+            startLine,
+            startCharacter + 1,
+            endLine,
+            endCharacter
+        );
+
+        const value = {
+            range,
+            hoverMessage: `Static analysis ran into an error processing this: ${statement.errorMessage}`,
+        };
+
+        return value;
+    });
+
+    return [decorationsSuccess, decorationsError];
 }

@@ -39,11 +39,20 @@
         "colors": [
             {
                 "id": "typescriptStaticAnalysis.variableBackground",
-                "description": "Background color for variables",
+                "description": "Color for variables, that we were able to calculate",
                 "defaults": {
                     "dark": "#00ff005e",
                     "light": "#dc18ee55",
                     "highContrast": "#FF000055"
+                }
+            },
+            {
+                "id": "typescriptStaticAnalysis.variableBackgroundError",
+                "description": "Color for variables that ran into an error.",
+                "defaults": {
+                    "dark": "#ff002296",
+                    "light": "#1826ee55",
+                    "highContrast": "#eeff0055"
                 }
             }
         ],

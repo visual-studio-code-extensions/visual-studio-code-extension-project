@@ -11,7 +11,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     let activeEditor = vscode.window.activeTextEditor;
 
-    const variableDecorationType = getVariableDecorationType();
+    const VariableDecorationOnSuccess = getVariableDecorationOnSuccess();
+    const variableDecorationOnError = getVariableDecorationTypeOnError();
 
     function updateDecorations() {
         logTrace("updateDecorations");
@@ -26,7 +27,14 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (isTsFile) {
             const decorations = getDecorations(text);
-            activeEditor.setDecorations(variableDecorationType, decorations);
+            activeEditor.setDecorations(
+                VariableDecorationOnSuccess,
+                decorations[0]
+            );
+            activeEditor.setDecorations(
+                variableDecorationOnError,
+                decorations[1]
+            );
             logTrace("wrote Decorations");
         }
     }
@@ -76,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
     );
 }
 
-function getVariableDecorationType() {
+function getVariableDecorationOnSuccess() {
     const color = new vscode.ThemeColor(
         "typescriptStaticAnalysis.variableBackground"
     );
@@ -96,6 +104,20 @@ function getVariableDecorationType() {
             //     // this color will be used in dark color themes
             //     borderColor: "lightblue",
             // },
+        }
+    );
+
+    return variableDecorationType;
+}
+
+function getVariableDecorationTypeOnError() {
+    const color = new vscode.ThemeColor(
+        "typescriptStaticAnalysis.variableBackgroundError"
+    );
+
+    const variableDecorationType = vscode.window.createTextEditorDecorationType(
+        {
+            color,
         }
     );
 

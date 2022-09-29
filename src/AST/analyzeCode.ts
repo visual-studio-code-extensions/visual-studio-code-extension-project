@@ -5,6 +5,8 @@ import { MapStack } from "./mapStack";
 import { CodeAnalysis } from "../Objects/CodeAnalysis";
 import { BlockAnalysis } from "../Objects/BlockAnalysis";
 import { detectAndProcess } from "./detectAndProcess";
+import { errorCollector } from "../Objects/errorCollector";
+
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
@@ -31,6 +33,7 @@ export function analyzeCode(code: string): CodeAnalysis {
     //Create array and stack that will hold the variables that we want to work with.
     const detectedVariableStatements: VariableStatementAnalysis[] = [];
     const detectedVariableMap: MapStack = new MapStack();
+    const errorCollector: errorCollector[] = [];
 
     //Add main scope
     detectedVariableMap.addNew();
@@ -50,6 +53,7 @@ export function analyzeCode(code: string): CodeAnalysis {
                 node,
                 detectedVariableStatements,
                 detectedVariableMap,
+                errorCollector,
                 sourceFile as ts.SourceFile
             );
         }
@@ -61,7 +65,7 @@ export function analyzeCode(code: string): CodeAnalysis {
     return {
         variableStatementAnalysis: detectedVariableStatements,
         blockAnalysis: blockAnalysis,
-        //Block is only concerned about declaration of variables in blocks
+        errorCollector,
     };
 }
 
