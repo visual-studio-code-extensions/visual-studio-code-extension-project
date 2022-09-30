@@ -13,13 +13,14 @@ import {
     StringOperations1String1NumberArg,
     StringOperations2NumberArg,
     StringOperations1NumberArg,
+    assignmentOp,
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
 import { errorCollector } from "../Objects/errorCollector";
 import { CodeLocation } from "../Objects/CodeLocation";
 
 //Check types of expression and choose operation accordingly
-function applyBinaryOperation(
+export function applyBinaryOperation(
     opToken: ts.BinaryExpression["operatorToken"],
     left: number | boolean | string,
     right: number | boolean | string
@@ -64,6 +65,7 @@ export function processExpression(
 ): VariableValues | undefined {
     if (node !== undefined) {
         if (ts.isBinaryExpression(node)) {
+            //Cases where const b = 2 + c += 4;
             //get left and right value
             const left = processExpression(
                 node.left,

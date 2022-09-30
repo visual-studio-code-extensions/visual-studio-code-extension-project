@@ -5,7 +5,8 @@ import { postFixUnaryExpression } from "./operations";
 import { processExpression } from "./processExpression";
 import { MapStack } from "./mapStack";
 import { errorCollector } from "../Objects/errorCollector";
-
+import { assignmentOp } from "./operations";
+import { applyBinaryOperation } from "./processExpression";
 export function expressionStatement(
     node: ts.ExpressionStatement,
     sourceFile: ts.SourceFile,
@@ -18,7 +19,7 @@ export function expressionStatement(
         const identifierValue = mapStack.getInformation(
             nodeExpression.left.getText()
         );
-            //check parent and apply operation
+        //check parent and apply operation
         const expressionLocation = getNodePosition(sourceFile, nodeExpression);
 
         const identifierLocation = getNodePosition(
@@ -43,6 +44,39 @@ export function expressionStatement(
                 expressionLocation,
                 identifierLocation,
             });
+        } else if (assignmentOp.indexOf(nodeExpression.operatorToken.kind) !== -1) {
+            const left = processExpression(
+                nodeExpression.left,
+                mapStack,
+                errorCollector,
+                identifierLocation,
+                expressionLocation
+            );
+            const right = processExpression(
+                nodeExpression.right,
+                mapStack,
+                errorCollector,
+                identifierLocation,
+                expressionLocation
+            );
+
+            if (left && right) {
+                const newVariableValue = applyBinaryOperation(
+                    nodeExpression.operatorToken,
+                    left,
+                    right
+                );
+                if (newVariableValue !== undefined) {
+                    return {
+                        name: nodeExpression.left.getText(),
+                        value: newVariableValue,
+                        variableType: identifierValue.variableType,
+                        text: node.getText(),
+                        expressionLocation,
+                        identifierLocation,
+                    };
+                }
+            }
         } else {
             //Get the new variable value
             const newVariableValue = processExpression(

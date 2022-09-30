@@ -709,22 +709,22 @@ test("Assignment operations", () => {
         {
             name: "b",
             text: "b+=a;",
-            value: 2,
+            value: 17,
         },
         {
             name: "b",
             text: "b-=1;",
-            value: 1,
+            value: 16,
         },
         {
             name: "b",
             text: "b*=3;",
-            value: 3,
+            value: 48,
         },
         {
             name: "b",
             text: "b/=2;",
-            value: 2,
+            value: 24,
         },
         {
             name: "b",
@@ -736,8 +736,7 @@ test("Assignment operations", () => {
             text: "const t = b+=4;",
             value: 6,
         },
-
     ];
-    //expect(actual).toStrictEqual(expected);
-    expectSubset(actual, expected);
+    expect(actual).toStrictEqual(expected);
+    //expectSubset(actual, expected);
 });
