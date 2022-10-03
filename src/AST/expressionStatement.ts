@@ -44,7 +44,9 @@ export function expressionStatement(
                 expressionLocation,
                 identifierLocation,
             });
-        } else if (assignmentOp.indexOf(nodeExpression.operatorToken.kind) !== -1) {
+        } else if (
+            assignmentOp.indexOf(nodeExpression.operatorToken.kind) !== -1
+        ) {
             const left = processExpression(
                 nodeExpression.left,
                 mapStack,

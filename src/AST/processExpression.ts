@@ -13,7 +13,6 @@ import {
     StringOperations1String1NumberArg,
     StringOperations2NumberArg,
     StringOperations1NumberArg,
-    assignmentOp,
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
 import { errorCollector } from "../Objects/errorCollector";

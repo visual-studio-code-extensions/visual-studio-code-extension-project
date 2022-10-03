@@ -51,4 +51,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replaced annoying VS code error messages to show errors in hover messages.
 
-- 
+- Added support to assignment operations like +=, -=...
