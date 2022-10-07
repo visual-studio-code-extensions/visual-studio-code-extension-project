@@ -25,26 +25,26 @@ export function getDecorations(text: string): vscode.DecorationOptions[][] {
         return value;
     });
 
-    const { errorCollector } = analyzeCode(text);
+    // const { errorCollector } = analyzeCode(text);
 
-    const decorationsError = errorCollector.map((statement) => {
-        const { startLine, startCharacter, endCharacter, endLine } =
-            statement.identifierLocation;
+    // const decorationsError = errorCollector.map((statement) => {
+    //     const { startLine, startCharacter, endCharacter, endLine } =
+    //         statement.identifierLocation;
 
-        const range = new vscode.Range(
-            startLine,
-            startCharacter + 1,
-            endLine,
-            endCharacter
-        );
+    //     const range = new vscode.Range(
+    //         startLine,
+    //         startCharacter + 1,
+    //         endLine,
+    //         endCharacter
+    //     );
 
-        const value = {
-            range,
-            hoverMessage: `Static analysis ran into an error processing this: ${statement.errorMessage}`,
-        };
+    //     const value = {
+    //         range,
+    //         hoverMessage: `Static analysis ran into an error processing this: ${statement.errorMessage}`,
+    //     };
 
-        return value;
-    });
+    //     return value;
+    // });
 
-    return [decorationsSuccess, decorationsError];
+    return [decorationsSuccess];
 }

@@ -1,9 +1,9 @@
 import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
-import { errorCollector } from "./errorCollector";
+import { ErrorCollector } from "./ErrorCollector";
 import { BlockAnalysis } from "./BlockAnalysis";
 
 export interface CodeAnalysis {
     blockAnalysis: BlockAnalysis[];
     variableStatementAnalysis: VariableStatementAnalysis[];
-    errorCollector: errorCollector[];
+    errorCollector: ErrorCollector[];
 }

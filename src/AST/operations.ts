@@ -95,7 +95,7 @@ export const lengthOperation = new Map<string, (a: string) => number>([
     ["length", (a: string) => a.length],
 ]);
 
-export const StringOperations0Args = new Map<string, (a: string) => string>([
+export const stringOperations0Args = new Map<string, (a: string) => string>([
     ["toLocaleLowerCase", (a: string) => a.toLocaleLowerCase()],
     ["toLocaleUpperCase", (a: string) => a.toLocaleUpperCase()],
     ["toLowerCase", (a: string) => a.toLowerCase()],
@@ -110,7 +110,7 @@ export const StringOperations0Args = new Map<string, (a: string) => string>([
 ]);
 
 //TODO: split
-export const StringOperations1NumberArg = new Map<
+export const stringOperations1NumberArg = new Map<
     string,
     (a: string, b: number) => string | undefined | number
 >([
@@ -125,7 +125,7 @@ export const StringOperations1NumberArg = new Map<
     ["codePointAt", (a: string, b: number) => a.codePointAt(b)],
 ]);
 
-export const StringOperations1StringArg = new Map<
+export const stringOperations1StringArg = new Map<
     string,
     (a: string, b: string) => boolean | string | number
 >([
@@ -138,7 +138,7 @@ export const StringOperations1StringArg = new Map<
     ["lastIndexOf", (a: string, b: string) => a.lastIndexOf(b)],
 ]);
 
-export const StringOperations2StringArg = new Map<
+export const stringOperations2StringArg = new Map<
     string,
     (a: string, b: string, c: string) => string
 >([
@@ -146,7 +146,7 @@ export const StringOperations2StringArg = new Map<
     ["replace", (a: string, b: string, c: string) => a.replace(b, c)],
 ]);
 
-export const StringOperations1String1NumberArg = new Map<
+export const stringOperations1String1NumberArg = new Map<
     string,
     (a: string, b: string, c: number) => number | string | boolean
 >([
@@ -159,7 +159,7 @@ export const StringOperations1String1NumberArg = new Map<
     ["includes", (a: string, b: string, c: number) => a.includes(b, c)],
 ]);
 
-export const StringOperations2NumberArg = new Map<
+export const stringOperations2NumberArg = new Map<
     string,
     (a: string, b: number, c: number) => string
 >([

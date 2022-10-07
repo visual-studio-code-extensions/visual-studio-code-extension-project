@@ -1,8 +1,8 @@
 {
     "name": "typescript-static-analysis",
     "displayName": "Typescript Static Analysis",
-    "description": "Typescript extension that shows value of variables through static analysis, for example defining var x = 5 + 6 will show 11 when you hover over the variable name. Currently support : boolean, numbers ",
-    "version": "1.1.0",
+    "description": "Typescript extension that shows value of variables through static analysis, for example defining var x = 5 + 6 will show 11 when you hover over the variable name. Currently support : boolean, numbers and strings. ",
+    "version": "1.1.1",
     "license": "unlicense",
     "engines": {
         "vscode": "^1.32.0"
@@ -41,18 +41,9 @@
                 "id": "typescriptStaticAnalysis.variableBackground",
                 "description": "Color for variables, that we were able to calculate",
                 "defaults": {
-                    "dark": "#00ff005e",
+                    "dark": "#3bc1ff",
                     "light": "#dc18ee55",
                     "highContrast": "#FF000055"
-                }
-            },
-            {
-                "id": "typescriptStaticAnalysis.variableBackgroundError",
-                "description": "Color for variables that ran into an error.",
-                "defaults": {
-                    "dark": "#ff002296",
-                    "light": "#1826ee55",
-                    "highContrast": "#eeff0055"
                 }
             }
         ],

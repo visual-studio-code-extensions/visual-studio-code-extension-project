@@ -7,15 +7,15 @@ import {
     stringOperations,
     stringBooleanOperations,
     lengthOperation,
-    StringOperations0Args,
-    StringOperations1StringArg,
-    StringOperations2StringArg,
-    StringOperations1String1NumberArg,
-    StringOperations2NumberArg,
-    StringOperations1NumberArg,
+    stringOperations0Args,
+    stringOperations1StringArg,
+    stringOperations2StringArg,
+    stringOperations1String1NumberArg,
+    stringOperations2NumberArg,
+    stringOperations1NumberArg,
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
-import { errorCollector } from "../Objects/errorCollector";
+import { ErrorCollector } from "../Objects/ErrorCollector";
 import { CodeLocation } from "../Objects/CodeLocation";
 
 //Check types of expression and choose operation accordingly
@@ -58,7 +58,7 @@ export function applyBinaryOperation(
 export function processExpression(
     node: ts.Expression | ts.NumericLiteral | ts.Identifier | undefined,
     mapStack: MapStack,
-    errorCollector: errorCollector[],
+    errorCollector: ErrorCollector[],
     identifierLocation: CodeLocation,
     expressionLocation: CodeLocation
 ): VariableValues | undefined {
@@ -241,13 +241,13 @@ const applyCallExpression = (
 ): VariableValues | undefined => {
     if (typeof objectValue === "string") {
         const lengthOp = lengthOperation.get(functionName);
-        const stringOp0arg = StringOperations0Args.get(functionName);
-        const boolean1string = StringOperations1StringArg.get(functionName);
-        const String2String = StringOperations2StringArg.get(functionName);
+        const stringOp0arg = stringOperations0Args.get(functionName);
+        const boolean1string = stringOperations1StringArg.get(functionName);
+        const string2String = stringOperations2StringArg.get(functionName);
         const number1String1Number =
-            StringOperations1String1NumberArg.get(functionName);
-        const string2Number = StringOperations2NumberArg.get(functionName);
-        const string1Number = StringOperations1NumberArg.get(functionName);
+            stringOperations1String1NumberArg.get(functionName);
+        const string2Number = stringOperations2NumberArg.get(functionName);
+        const string1Number = stringOperations1NumberArg.get(functionName);
         const argsCount = args.length;
         if (lengthOp) {
             return lengthOp(objectValue);
@@ -267,11 +267,11 @@ const applyCallExpression = (
             return string1Number(objectValue, args[0]);
         } else if (argsCount === 2) {
             if (
-                String2String &&
+                string2String &&
                 typeof args[0] === "string" &&
                 typeof args[1] === "string"
             ) {
-                return String2String(objectValue, args[0], args[1]);
+                return string2String(objectValue, args[0], args[1]);
             } else if (number1String1Number) {
                 if (
                     typeof args[0] === "number" &&

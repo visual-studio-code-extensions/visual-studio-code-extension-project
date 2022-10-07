@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed an issue where it was not picking the right variable
 
-## [1.1.0] - 2022-10-09
+## [1.1.0] - 2022-10-02
 
 ### Added
 
@@ -52,3 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced annoying VS code error messages to show errors in hover messages.
 
 - Added support to assignment operations like +=, -=...
+
+## [1.1.1] - 2022-10-06
+
+- Parser doesn't throw errors anymore and only shows results if possible to calculate.
+
+- Variables will stay the default colors.

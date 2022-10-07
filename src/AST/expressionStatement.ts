@@ -4,14 +4,14 @@ import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { postFixUnaryExpression } from "./operations";
 import { processExpression } from "./processExpression";
 import { MapStack } from "./mapStack";
-import { errorCollector } from "../Objects/errorCollector";
+import { ErrorCollector } from "../Objects/ErrorCollector";
 import { assignmentOp } from "./operations";
 import { applyBinaryOperation } from "./processExpression";
 export function expressionStatement(
     node: ts.ExpressionStatement,
     sourceFile: ts.SourceFile,
     mapStack: MapStack,
-    errorCollector: errorCollector[]
+    errorCollector: ErrorCollector[]
 ): VariableStatementAnalysis | undefined {
     const nodeExpression = node.expression;
     //calculate binary expression and update its value

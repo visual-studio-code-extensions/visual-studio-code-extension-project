@@ -4,13 +4,13 @@ import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { MapStack } from "./mapStack";
 import { processExpression } from "./processExpression";
 import { expressionStatement } from "./expressionStatement";
-import { errorCollector } from "../Objects/errorCollector";
+import { ErrorCollector } from "../Objects/ErrorCollector";
 
 export function detectAndProcess(
     node: ts.Node,
     detectedVariableStatements: VariableStatementAnalysis[],
     detectedVariableMap: MapStack,
-    errorCollector: errorCollector[],
+    errorCollector: ErrorCollector[],
     sourceFile: ts.SourceFile
 ) {
     //Variable statment as in like defining a new variable and so.
