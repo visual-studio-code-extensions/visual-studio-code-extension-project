@@ -16,9 +16,7 @@ export function createProgramFromFiles(
     const { intellisense } = options;
 
     const fileNames = files.map((f) => f.name);
-    const fileMap = new Map<string, string>(
-        files.map(({ name, data }) => [name, data])
-    );
+    const fileMap = new Map<string, string>(files.map(({ name, data }) => [name, data]));
 
     const defaultScriptTarget = ts.ScriptTarget.ES2020;
     const defaultLibFileName = "lib.d.ts";
@@ -53,12 +51,7 @@ export function createProgramFromFiles(
                 return ts.createSourceFile(filename, data, scriptTarget, true);
             }
             if (filename === defaultLibFileName) {
-                return ts.createSourceFile(
-                    filename,
-                    libData,
-                    scriptTarget,
-                    true
-                );
+                return ts.createSourceFile(filename, libData, scriptTarget, true);
             }
 
             return undefined;

@@ -3,9 +3,9 @@ import { VariableStatementAnalysis } from "../Objects/VariableStatementAnalysis"
 import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { MapStack } from "./mapStack";
 import { processExpression } from "./processExpression";
-import { expressionStatement } from './expressionStatement';
+import { expressionStatement } from "./expressionStatement";
 import { ErrorCollector } from "../Objects/ErrorCollector";
-import { CodeLocation } from '../Objects/CodeLocation';
+import { CodeLocation } from "../Objects/CodeLocation";
 
 export function detectAndProcess(
     node: ts.Node,
@@ -19,79 +19,58 @@ export function detectAndProcess(
         const variableType = node.declarationList.getChildAt(0).getText();
         //No need to check if source file is undefined, because we already did that earlier in the program.
         //Get position information
-        const expressionLocation = getNodePosition(
-            sourceFile as ts.SourceFile,
-            node
-        );
+        const expressionLocation = getNodePosition(sourceFile as ts.SourceFile, node);
         //calculate the value of that variable and add it to the variables array
         const declarationsList = node.declarationList.declarations;
 
         //Always the last variable contains the expression to calculate.
-        let expressionToProcess = declarationsList[declarationsList.length - 1];
-            const variablesLocation = declarationsList.map((variable) => {
-                const identifierLocation = getNodePosition(
-                    sourceFile as ts.SourceFile,
-                    expressionToProcess.name
-                );
-                return identifierLocation;
-            })
-            
-            if (variableType !== "const" && variableType !== "let") {
-                variablesLocation.forEach((variableLocation) => {
-                    errorCollector.push({
+        const expressionToProcess = declarationsList[declarationsList.length - 1];
+        const variablesLocation = declarationsList.map(() => {
+            const identifierLocation = getNodePosition(
+                sourceFile as ts.SourceFile,
+                expressionToProcess.name
+            );
+            return identifierLocation;
+        });
+
+        if (variableType === "const" || variableType === "let") {
+            // One value for all identifiers
+            const variableValue = processExpression(
+                //get the expression of the variable declaration
+                expressionToProcess.initializer,
+                detectedVariableMap
+            );
+
+            if (variableValue !== undefined) {
+                //Update the most recent stack scope to include these/this variable(s).
+                declarationsList.forEach((variable, index) => {
+                    detectedVariableMap.set(variable.name.getText(), {
+                        variableValue: variableValue,
+                        variableType: variableType,
+                    });
+
+                    //variablesListLocation is the location of a, b in the following example: let a, b = 2;
+                    const identifierLocation: CodeLocation = {
+                        startLine: variablesLocation[index].startLine,
+                        endLine: variablesLocation[index].endLine,
+                        startCharacter: variablesLocation[index].startCharacter,
+                        endCharacter: variablesLocation[variablesLocation.length - 1].endCharacter,
+                    };
+
+                    //Create new object that shows information of the variable and push it to the array
+                    detectedVariableStatements.push({
+                        name: variable.name.getText(),
+
+                        value: variableValue,
+                        variableType: variableType,
+                        text: node.getText(),
+
                         expressionLocation,
-                        identifierLocation : variableLocation,
-                        errorMessage: "Can only process const and let statements ",
+                        identifierLocation: identifierLocation,
                     });
                 });
-                
-            } else {
-                //variablesListLocation is the location of a, b in the following example: let a, b = 2;
-                const identifierListLocation :CodeLocation  = {
-                    startLine : variablesLocation[0].startLine,
-                    endLine : variablesLocation[0].endLine,
-                    startCharacter: variablesLocation[0].startCharacter,
-                    endCharacter: variablesLocation[variablesLocation.length - 1].endCharacter
-                };
-                const variableValue = processExpression(
-                    //get the expression of the variable declaration
-                    expressionToProcess.initializer,
-                    detectedVariableMap,
-                    errorCollector,
-                    identifierListLocation,
-                    expressionLocation
-                );
-
-                if (variableValue !== undefined) {
-                    //Update the most recent stack scope to include these/this variable(s).
-                    declarationsList.forEach((variable) => {
-                        detectedVariableMap.set(variable.name.getText(), {
-                            variableValue: variableValue,
-                            variableType: variableType,
-                        });
-                        
-                        //Create new object that shows information of the variable and push it to the array
-                        detectedVariableStatements.push({
-                            name: expressionToProcess.name.getText(),
-
-                            value: variableValue,
-                            variableType: variableType,
-                            text: node.getText(),
-
-                            expressionLocation,
-                            identifierLocation,
-                        });
-                    });
-                    
-                    
-                } else {
-                    errorCollector.push({
-                        errorMessage: "Can't process this value",
-                        expressionLocation,
-                        identifierLocation,
-                    });
-                }
             }
+        }
         //Expression statment as in like editing an existing variable
     } else if (ts.isExpressionStatement(node)) {
         const expressionVariable = expressionStatement(

@@ -18,10 +18,7 @@ function getSubsetArray<T extends object>(actual: T[], expected: Partial<T>[]) {
     return actual.map((value, index) => getSubset(value, expected[index]));
 }
 
-export function expectSubset<T extends object>(
-    actual: T[],
-    expected: Partial<T>[]
-) {
+export function expectSubset<T extends object>(actual: T[], expected: Partial<T>[]) {
     expect(actual.length).toBe(expected.length);
     const actualSubset = getSubsetArray(actual, expected);
     expect(actualSubset).toStrictEqual(expected);

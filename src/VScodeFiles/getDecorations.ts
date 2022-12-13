@@ -5,21 +5,13 @@ export function getDecorations(text: string): vscode.DecorationOptions[][] {
     const { variableStatementAnalysis } = analyzeCode(text);
 
     const decorationsSuccess = variableStatementAnalysis.map((statement) => {
-        const { startLine, startCharacter, endCharacter, endLine } =
-            statement.identifierLocation;
+        const { startLine, startCharacter, endCharacter, endLine } = statement.identifierLocation;
 
-        const range = new vscode.Range(
-            startLine,
-            startCharacter + 1,
-            endLine,
-            endCharacter
-        );
+        const range = new vscode.Range(startLine, startCharacter + 1, endLine, endCharacter);
 
         const value = {
             range,
-            hoverMessage: `${statement.name} (${typeof statement.value}) = ${
-                statement.value
-            }`,
+            hoverMessage: `${statement.name} (${typeof statement.value}) = ${statement.value}`,
         };
 
         return value;

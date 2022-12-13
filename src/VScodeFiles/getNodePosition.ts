@@ -1,10 +1,7 @@
 import * as ts from "typescript";
 import { CodeLocation } from "../Objects/CodeLocation";
 
-export function getNodePosition(
-    sourceFile: ts.SourceFile,
-    node: ts.Node
-): CodeLocation {
+export function getNodePosition(sourceFile: ts.SourceFile, node: ts.Node): CodeLocation {
     const start = ts.getLineAndCharacterOfPosition(sourceFile, node.pos);
 
     const end = ts.getLineAndCharacterOfPosition(sourceFile, node.end);

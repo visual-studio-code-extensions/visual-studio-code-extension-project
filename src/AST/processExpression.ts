@@ -15,8 +15,6 @@ import {
     stringOperations1NumberArg,
 } from "./operations";
 import { VariableValues, MapStack } from "./mapStack";
-import { ErrorCollector } from "../Objects/ErrorCollector";
-import { CodeLocation } from "../Objects/CodeLocation";
 
 //Check types of expression and choose operation accordingly
 export function applyBinaryOperation(
@@ -57,67 +55,31 @@ export function applyBinaryOperation(
 
 export function processExpression(
     node: ts.Expression | ts.NumericLiteral | ts.Identifier | undefined,
-    mapStack: MapStack,
-    errorCollector: ErrorCollector[],
-    identifierLocation: CodeLocation,
-    expressionLocation: CodeLocation
+    mapStack: MapStack
 ): VariableValues | undefined {
     if (node !== undefined) {
         if (ts.isBinaryExpression(node)) {
             //Cases where const b = 2 + c += 4;
             //get left and right value
-            const left = processExpression(
-                node.left,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
-            const right = processExpression(
-                node.right,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
+            const left = processExpression(node.left, mapStack);
+            const right = processExpression(node.right, mapStack);
 
             if (left && right) {
-                const value = applyBinaryOperation(
-                    node.operatorToken,
-                    left,
-                    right
-                );
+                const value = applyBinaryOperation(node.operatorToken, left, right);
                 if (value === undefined) {
-                    errorCollector.push({
-                        errorMessage:
-                            "Variable not defined or can't be processed",
-                        expressionLocation,
-                        identifierLocation,
-                    });
+                    // Variable not defined or can't be processed
                     return;
                 }
                 return value;
             }
         } else if (ts.isCallExpression(node)) {
-            const expression = processExpression(
-                node.expression,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
+            const expression = processExpression(node.expression, mapStack);
 
             if (expression && ts.isPropertyAccessExpression(node.expression)) {
                 const argsCollector: VariableValues[] = [];
 
                 for (const argExpression of node.arguments) {
-                    const result = processExpression(
-                        argExpression,
-                        mapStack,
-                        errorCollector,
-                        identifierLocation,
-                        expressionLocation
-                    );
+                    const result = processExpression(argExpression, mapStack);
 
                     if (result === undefined) {
                         return;
@@ -134,20 +96,11 @@ export function processExpression(
                 return returnValue;
             }
         } else if (ts.isPropertyAccessExpression(node)) {
-            const identifierValue = processExpression(
-                node.expression,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
+            const identifierValue = processExpression(node.expression, mapStack);
 
             if (typeof identifierValue === "string") {
                 if (!ts.isCallExpression(node.parent)) {
-                    const returnValue = applyCallExpression(
-                        node.name.getText(),
-                        identifierValue
-                    );
+                    const returnValue = applyCallExpression(node.name.getText(), identifierValue);
 
                     if (returnValue !== undefined) {
                         return returnValue;
@@ -161,13 +114,7 @@ export function processExpression(
             if (identifierValue !== undefined) return identifierValue;
         } else if (ts.isParenthesizedExpression(node)) {
             //in case we encounter a (...) situation, for example const a = 2 + (2 + 4)
-            return processExpression(
-                node.expression,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
+            return processExpression(node.expression, mapStack);
         } else if (ts.isPrefixUnaryExpression(node)) {
             if (ts.isIdentifier(node.operand)) {
                 //Case where we are doing ++i or --i
@@ -175,12 +122,6 @@ export function processExpression(
 
                 //variable not found
                 if (identifierValue === undefined) {
-                    errorCollector.push({
-                        errorMessage:
-                            "Can't read this variable: " + node.operand.getText,
-                        expressionLocation,
-                        identifierLocation,
-                    });
                     return;
                 }
 
@@ -196,23 +137,11 @@ export function processExpression(
                     node.operator === ts.SyntaxKind.MinusMinusToken
                 ) {
                     //Can't do --4 or ++3 when defining a variable
-                    errorCollector.push({
-                        errorMessage:
-                            "Can't read this variable: " + node.operand.getText,
-                        expressionLocation,
-                        identifierLocation,
-                    });
                     return;
                 }
 
                 //Cases where its -2 or +4 which is okay.
-                const value = processExpression(
-                    node.operand,
-                    mapStack,
-                    errorCollector,
-                    identifierLocation,
-                    expressionLocation
-                );
+                const value = processExpression(node.operand, mapStack);
 
                 //Get operation from the map and apply it
                 const operation = preFixUnaryExpression.get(node.operator);
@@ -244,8 +173,7 @@ const applyCallExpression = (
         const stringOp0arg = stringOperations0Args.get(functionName);
         const boolean1string = stringOperations1StringArg.get(functionName);
         const string2String = stringOperations2StringArg.get(functionName);
-        const number1String1Number =
-            stringOperations1String1NumberArg.get(functionName);
+        const number1String1Number = stringOperations1String1NumberArg.get(functionName);
         const string2Number = stringOperations2NumberArg.get(functionName);
         const string1Number = stringOperations1NumberArg.get(functionName);
         const argsCount = args.length;
@@ -253,35 +181,17 @@ const applyCallExpression = (
             return lengthOp(objectValue);
         } else if (stringOp0arg && argsCount === 0) {
             return stringOp0arg(objectValue);
-        } else if (
-            boolean1string &&
-            argsCount === 1 &&
-            typeof args[0] === "string"
-        ) {
+        } else if (boolean1string && argsCount === 1 && typeof args[0] === "string") {
             return boolean1string(objectValue, args[0]);
-        } else if (
-            string1Number &&
-            argsCount === 1 &&
-            typeof args[0] === "number"
-        ) {
+        } else if (string1Number && argsCount === 1 && typeof args[0] === "number") {
             return string1Number(objectValue, args[0]);
         } else if (argsCount === 2) {
-            if (
-                string2String &&
-                typeof args[0] === "string" &&
-                typeof args[1] === "string"
-            ) {
+            if (string2String && typeof args[0] === "string" && typeof args[1] === "string") {
                 return string2String(objectValue, args[0], args[1]);
             } else if (number1String1Number) {
-                if (
-                    typeof args[0] === "number" &&
-                    typeof args[1] === "string"
-                ) {
+                if (typeof args[0] === "number" && typeof args[1] === "string") {
                     return number1String1Number(objectValue, args[1], args[0]);
-                } else if (
-                    typeof args[0] === "string" &&
-                    typeof args[1] === "number"
-                ) {
+                } else if (typeof args[0] === "string" && typeof args[1] === "number") {
                     return number1String1Number(objectValue, args[0], args[1]);
                 }
             } else if (

@@ -77,9 +77,7 @@ export function analyzeCode(code: string): CodeAnalysis {
 function visitNodeRecursive(node: ts.Node, visit: (node: ts.Node) => void) {
     //Call method on every node
     visit(node);
-    node.getChildren().forEach((child: ts.Node) =>
-        visitNodeRecursive(child, visit)
-    );
+    node.getChildren().forEach((child: ts.Node) => visitNodeRecursive(child, visit));
 }
 
 //For future parse and reparse whenever file changes

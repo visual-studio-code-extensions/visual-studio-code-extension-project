@@ -16,16 +16,11 @@ export function expressionStatement(
     const nodeExpression = node.expression;
     //calculate binary expression and update its value
     if (ts.isBinaryExpression(nodeExpression)) {
-        const identifierValue = mapStack.getInformation(
-            nodeExpression.left.getText()
-        );
+        const identifierValue = mapStack.getInformation(nodeExpression.left.getText());
         //check parent and apply operation
         const expressionLocation = getNodePosition(sourceFile, nodeExpression);
 
-        const identifierLocation = getNodePosition(
-            sourceFile,
-            nodeExpression.left
-        );
+        const identifierLocation = getNodePosition(sourceFile, nodeExpression.left);
 
         //variable not found in the array
         if (identifierValue === undefined) {
@@ -44,23 +39,9 @@ export function expressionStatement(
                 expressionLocation,
                 identifierLocation,
             });
-        } else if (
-            assignmentOp.indexOf(nodeExpression.operatorToken.kind) !== -1
-        ) {
-            const left = processExpression(
-                nodeExpression.left,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
-            const right = processExpression(
-                nodeExpression.right,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
+        } else if (assignmentOp.indexOf(nodeExpression.operatorToken.kind) !== -1) {
+            const left = processExpression(nodeExpression.left, mapStack);
+            const right = processExpression(nodeExpression.right, mapStack);
 
             if (left && right) {
                 const newVariableValue = applyBinaryOperation(
@@ -81,13 +62,7 @@ export function expressionStatement(
             }
         } else {
             //Get the new variable value
-            const newVariableValue = processExpression(
-                nodeExpression.right,
-                mapStack,
-                errorCollector,
-                identifierLocation,
-                expressionLocation
-            );
+            const newVariableValue = processExpression(nodeExpression.right, mapStack);
 
             if (newVariableValue !== undefined) {
                 return {
@@ -107,14 +82,9 @@ export function expressionStatement(
     ) {
         const expressionLocation = getNodePosition(sourceFile, nodeExpression);
 
-        const identifierLocation = getNodePosition(
-            sourceFile,
-            nodeExpression.operand
-        );
+        const identifierLocation = getNodePosition(sourceFile, nodeExpression.operand);
         if (ts.isIdentifier(nodeExpression.operand)) {
-            const identifierValue = mapStack.getInformation(
-                nodeExpression.operand.getText()
-            );
+            const identifierValue = mapStack.getInformation(nodeExpression.operand.getText());
 
             //variable not found
             if (identifierValue === undefined) {
@@ -132,9 +102,7 @@ export function expressionStatement(
                 });
                 return;
             } else {
-                const operation = postFixUnaryExpression.get(
-                    nodeExpression.operator
-                );
+                const operation = postFixUnaryExpression.get(nodeExpression.operator);
 
                 const newVariableValue = identifierValue.variableValue;
 
