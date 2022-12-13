@@ -40,6 +40,11 @@ module.exports = /** @type WebpackConfig */ {
 			]
 		}]
 	},
+	// Show error details
+	stats: {
+		errorDetails : true,
+		env: true,
+	},
 	plugins: [
 		new webpack.ProvidePlugin({
 			process: 'process/browser',
