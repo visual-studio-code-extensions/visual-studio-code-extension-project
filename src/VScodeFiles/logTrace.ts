@@ -6,9 +6,7 @@ import vscode from "vscode";
 let channelTrace: vscode.OutputChannel;
 
 export function createTrace() {
-    channelTrace = vscode.window.createOutputChannel(
-        "TypeScript Static Analysis Trace"
-    );
+    channelTrace = vscode.window.createOutputChannel("TypeScript Static Analysis Trace");
 }
 
 export function logTrace(line: string) {

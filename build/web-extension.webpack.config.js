@@ -17,7 +17,7 @@ module.exports = /** @type WebpackConfig */ {
 	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 	target: 'webworker', // extensions run in a webworker context
 	entry: {
-		'extension': './src/extension.ts',
+		'extension': './src/VScodeFiles/extension.ts',
 	},
 	resolve: {
 		mainFields: ['browser', 'module', 'main'],
@@ -39,6 +39,11 @@ module.exports = /** @type WebpackConfig */ {
 				}
 			]
 		}]
+	},
+	// Show error details
+	stats: {
+		errorDetails : true,
+		env: true,
 	},
 	plugins: [
 		new webpack.ProvidePlugin({

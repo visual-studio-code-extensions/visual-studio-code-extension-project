@@ -1,10 +1,12 @@
 import ts from "typescript";
 import { createProgramFromFiles } from "./createProgramFromFiles";
-import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
+import { VariableStatementAnalysis } from "../Objects/VariableStatementAnalysis";
 import { MapStack } from "./mapStack";
-import { CodeAnalysis } from "./CodeAnalysis";
-import { BlockAnalysis } from "./BlockAnalysis";
+import { CodeAnalysis } from "../Objects/CodeAnalysis";
+import { BlockAnalysis } from "../Objects/BlockAnalysis";
 import { detectAndProcess } from "./detectAndProcess";
+import { ErrorCollector } from "../Objects/ErrorCollector";
+
 /**
  * visit top level nodes and retrieve all VariableStatements.
  * @param code
@@ -31,6 +33,7 @@ export function analyzeCode(code: string): CodeAnalysis {
     //Create array and stack that will hold the variables that we want to work with.
     const detectedVariableStatements: VariableStatementAnalysis[] = [];
     const detectedVariableMap: MapStack = new MapStack();
+    const errorCollector: ErrorCollector[] = [];
 
     //Add main scope
     detectedVariableMap.addNew();
@@ -50,6 +53,7 @@ export function analyzeCode(code: string): CodeAnalysis {
                 node,
                 detectedVariableStatements,
                 detectedVariableMap,
+                errorCollector,
                 sourceFile as ts.SourceFile
             );
         }
@@ -61,7 +65,7 @@ export function analyzeCode(code: string): CodeAnalysis {
     return {
         variableStatementAnalysis: detectedVariableStatements,
         blockAnalysis: blockAnalysis,
-        //Block is only concerned about declaration of variables in blocks
+        errorCollector,
     };
 }
 
@@ -73,9 +77,7 @@ export function analyzeCode(code: string): CodeAnalysis {
 function visitNodeRecursive(node: ts.Node, visit: (node: ts.Node) => void) {
     //Call method on every node
     visit(node);
-    node.getChildren().forEach((child: ts.Node) =>
-        visitNodeRecursive(child, visit)
-    );
+    node.getChildren().forEach((child: ts.Node) => visitNodeRecursive(child, visit));
 }
 
 //For future parse and reparse whenever file changes

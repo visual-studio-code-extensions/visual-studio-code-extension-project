@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let activeEditor = vscode.window.activeTextEditor;
 
-    const variableDecorationType = getVariableDecorationType();
+    const variableDecorationOnSuccess = getVariableDecorationOnSuccess();
 
     function updateDecorations() {
         logTrace("updateDecorations");
@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (isTsFile) {
             const decorations = getDecorations(text);
-            activeEditor.setDecorations(variableDecorationType, decorations);
+            activeEditor.setDecorations(variableDecorationOnSuccess, decorations[0]);
             logTrace("wrote Decorations");
         }
     }
@@ -76,28 +76,24 @@ export function activate(context: vscode.ExtensionContext) {
     );
 }
 
-function getVariableDecorationType() {
-    const color = new vscode.ThemeColor(
-        "typescriptStaticAnalysis.variableBackground"
-    );
+function getVariableDecorationOnSuccess() {
+    const color = new vscode.ThemeColor("typescriptStaticAnalysis.variableBackground");
 
-    const variableDecorationType = vscode.window.createTextEditorDecorationType(
-        {
-            //borderWidth: "0.1px",
-            //borderStyle: "solid",
-            //overviewRulerColor: "blue",
-            color,
-            //overviewRulerLane: vscode.OverviewRulerLane.Right,
-            // light: {
-            //     // this color will be used in light color themes
-            //     borderColor: "pink",
-            // },
-            // dark: {
-            //     // this color will be used in dark color themes
-            //     borderColor: "lightblue",
-            // },
-        }
-    );
+    const variableDecorationType = vscode.window.createTextEditorDecorationType({
+        //borderWidth: "0.1px",
+        //borderStyle: "solid",
+        //overviewRulerColor: "blue",
+        color,
+        //overviewRulerLane: vscode.OverviewRulerLane.Right,
+        // light: {
+        //     // this color will be used in light color themes
+        //     borderColor: "pink",
+        // },
+        // dark: {
+        //     // this color will be used in dark color themes
+        //     borderColor: "lightblue",
+        // },
+    });
 
     return variableDecorationType;
 }

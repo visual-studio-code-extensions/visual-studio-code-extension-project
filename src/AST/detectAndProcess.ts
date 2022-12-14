@@ -1,77 +1,76 @@
 import ts from "typescript";
-import { VariableStatementAnalysis } from "./VariableStatementAnalysis";
-import { getNodePosition } from "./getNodePosition";
+import { VariableStatementAnalysis } from "../Objects/VariableStatementAnalysis";
+import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { MapStack } from "./mapStack";
 import { processExpression } from "./processExpression";
-import { editVariables } from "./editVariable";
+import { expressionStatement } from "./expressionStatement";
+import { ErrorCollector } from "../Objects/ErrorCollector";
 
 export function detectAndProcess(
     node: ts.Node,
     detectedVariableStatements: VariableStatementAnalysis[],
     detectedVariableMap: MapStack,
+    errorCollector: ErrorCollector[],
     sourceFile: ts.SourceFile
 ) {
     //Variable statment as in like defining a new variable and so.
     if (ts.isVariableStatement(node)) {
         const variableType = node.declarationList.getChildAt(0).getText();
-        if (variableType !== "const" && variableType !== "let") {
-            throw new Error(
-                "Can only process const and let statements, please change following statment: " +
-                    node.getText()
-            );
-        }
+        //No need to check if source file is undefined, because we already did that earlier in the program.
+        //Get position information
+        const expressionLocation = getNodePosition(sourceFile as ts.SourceFile, node);
         //calculate the value of that variable and add it to the variables array
         const declarationsList = node.declarationList.declarations;
-        declarationsList.forEach(function (expression) {
+
+        //Always the last variable contains the expression to calculate.
+        const expressionToProcess = declarationsList[declarationsList.length - 1];
+
+        if (variableType === "const" || variableType === "let") {
+            // One value for all identifiers
             const variableValue = processExpression(
                 //get the expression of the variable declaration
-                expression.initializer,
+                expressionToProcess.initializer,
                 detectedVariableMap
             );
 
-            if (variableValue === undefined) {
-                throw Error("Value is undefined");
+            if (variableValue !== undefined) {
+                //Update the most recent stack scope to include these/this variable(s).
+                declarationsList.forEach((variable) => {
+                    detectedVariableMap.set(variable.name.getText(), {
+                        variableValue: variableValue,
+                        variableType: variableType,
+                    });
+
+                    //Create new object that shows information of the variable and push it to the array
+                    detectedVariableStatements.push({
+                        name: variable.name.getText(),
+
+                        value: variableValue,
+                        variableType: variableType,
+                        text: node.getText(),
+
+                        expressionLocation,
+                        identifierLocation: getNodePosition(
+                            sourceFile as ts.SourceFile,
+                            variable.name
+                        ),
+                    });
+                });
             }
-
-            //No need to check if source file is undefined, because we already did that earlier in the program.
-            //Get position information
-            const expressionLocation = getNodePosition(
-                sourceFile as ts.SourceFile,
-                node
-            );
-
-            const identifierLocation = getNodePosition(
-                sourceFile as ts.SourceFile,
-                expression.name
-            );
-
-            //Update the most recent stack scope to include this variable.
-            detectedVariableMap.set(expression.name.getText(), {
-                variableValue: variableValue,
-                variableType: variableType,
-            });
-
-            //Create new object that shows information of the variable and push it to the array
-            detectedVariableStatements.push({
-                name: expression.name.getText(),
-
-                value: variableValue,
-                variableType: variableType,
-                text: node.getText(),
-
-                expressionLocation,
-                identifierLocation,
-            });
-        });
+        }
         //Expression statment as in like editing an existing variable
     } else if (ts.isExpressionStatement(node)) {
-        const expressionVariable = editVariables(
+        const expressionVariable = expressionStatement(
             node,
             sourceFile as ts.SourceFile,
-            detectedVariableMap
+            detectedVariableMap,
+            errorCollector
         );
-
-        if (expressionVariable) {
+        if (
+            expressionVariable !== undefined &&
+            expressionVariable.variableType !== undefined &&
+            expressionVariable.value !== undefined
+        ) {
             detectedVariableStatements.push(expressionVariable);
             detectedVariableMap.set(expressionVariable.name, {
                 variableType: expressionVariable.variableType,
@@ -88,6 +87,7 @@ export function detectAndProcess(
                 child,
                 detectedVariableStatements,
                 detectedVariableMap,
+                errorCollector,
                 sourceFile as ts.SourceFile
             )
         );
@@ -99,6 +99,7 @@ export function detectAndProcess(
             node.thenStatement,
             detectedVariableStatements,
             detectedVariableMap,
+            errorCollector,
             sourceFile as ts.SourceFile
         );
 
@@ -108,6 +109,7 @@ export function detectAndProcess(
                 node.elseStatement,
                 detectedVariableStatements,
                 detectedVariableMap,
+                errorCollector,
                 sourceFile as ts.SourceFile
             );
         }
