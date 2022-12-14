@@ -35,10 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added support for && and ||
 
-### Changed
-
-- Fixed an issue where it was not picking the right variable
-
 ## [1.1.0] - 2022-10-02
 
 ### Added
@@ -55,6 +51,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2022-10-06
 
+### Changed
+
 - Parser doesn't throw errors anymore and only shows results if possible to calculate.
 
 - Variables will stay the default colors.
+
+## [1.1.2] - 2022-12-13
+
+### Changed
+
+- Fixed an issue where it was not reading multiple variable definition.
