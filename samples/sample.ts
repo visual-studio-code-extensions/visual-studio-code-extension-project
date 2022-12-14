@@ -14,6 +14,6 @@ const a : string = "I love ";
     }
 }
 const walid = "Happy birthday";
-
+let zb, sd = 3;
 const f = d + s;
 2--;

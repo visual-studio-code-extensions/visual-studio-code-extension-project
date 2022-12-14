@@ -4,7 +4,7 @@ import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { postFixUnaryExpression } from "./operations";
 import { processExpression } from "./processExpression";
 import { MapStack } from "./mapStack";
-import { ErrorCollector } from "../Objects/ErrorCollector";
+import { ErrorCollector } from "../ErrorCollector";
 import { assignmentOp } from "./operations";
 import { applyBinaryOperation } from "./processExpression";
 export function expressionStatement(

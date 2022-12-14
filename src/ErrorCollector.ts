@@ -1,4 +1,4 @@
-import { CodeLocation } from "./CodeLocation";
+import { CodeLocation } from "./Objects/CodeLocation";
 
 export interface ErrorCollector {
     errorMessage: string;

@@ -5,7 +5,7 @@ import { MapStack } from "./mapStack";
 import { CodeAnalysis } from "../Objects/CodeAnalysis";
 import { BlockAnalysis } from "../Objects/BlockAnalysis";
 import { detectAndProcess } from "./detectAndProcess";
-import { ErrorCollector } from "../Objects/ErrorCollector";
+import { ErrorCollector } from "../ErrorCollector";
 
 /**
  * visit top level nodes and retrieve all VariableStatements.

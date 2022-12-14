@@ -4,7 +4,7 @@ import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { MapStack } from "./mapStack";
 import { processExpression } from "./processExpression";
 import { expressionStatement } from "./expressionStatement";
-import { ErrorCollector } from "../Objects/ErrorCollector";
+import { ErrorCollector } from "../ErrorCollector";
 import { CodeLocation } from "../Objects/CodeLocation";
 
 export function detectAndProcess(
