@@ -4,8 +4,7 @@ import { getNodePosition } from "../VScodeFiles/getNodePosition";
 import { MapStack } from "./mapStack";
 import { processExpression } from "./processExpression";
 import { expressionStatement } from "./expressionStatement";
-import { ErrorCollector } from "../ErrorCollector";
-import { CodeLocation } from "../Objects/CodeLocation";
+import { ErrorCollector } from "../Objects/ErrorCollector";
 
 export function detectAndProcess(
     node: ts.Node,
@@ -25,13 +24,6 @@ export function detectAndProcess(
 
         //Always the last variable contains the expression to calculate.
         const expressionToProcess = declarationsList[declarationsList.length - 1];
-        const variablesLocation = declarationsList.map(() => {
-            const identifierLocation = getNodePosition(
-                sourceFile as ts.SourceFile,
-                expressionToProcess.name
-            );
-            return identifierLocation;
-        });
 
         if (variableType === "const" || variableType === "let") {
             // One value for all identifiers
@@ -43,19 +35,11 @@ export function detectAndProcess(
 
             if (variableValue !== undefined) {
                 //Update the most recent stack scope to include these/this variable(s).
-                declarationsList.forEach((variable, index) => {
+                declarationsList.forEach((variable) => {
                     detectedVariableMap.set(variable.name.getText(), {
                         variableValue: variableValue,
                         variableType: variableType,
                     });
-
-                    //variablesListLocation is the location of a, b in the following example: let a, b = 2;
-                    const identifierLocation: CodeLocation = {
-                        startLine: variablesLocation[index].startLine,
-                        endLine: variablesLocation[index].endLine,
-                        startCharacter: variablesLocation[index].startCharacter,
-                        endCharacter: variablesLocation[variablesLocation.length - 1].endCharacter,
-                    };
 
                     //Create new object that shows information of the variable and push it to the array
                     detectedVariableStatements.push({
@@ -66,7 +50,10 @@ export function detectAndProcess(
                         text: node.getText(),
 
                         expressionLocation,
-                        identifierLocation: identifierLocation,
+                        identifierLocation: getNodePosition(
+                            sourceFile as ts.SourceFile,
+                            variable.name
+                        ),
                     });
                 });
             }
